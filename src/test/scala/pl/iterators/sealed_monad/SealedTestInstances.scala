@@ -9,11 +9,11 @@ import scala.language.higherKinds
 trait SealedTestInstances {
   import SealedTestInstances.ADT
 
-  implicit def ArbXD[F[_]: Monad, A: Arbitrary, B: Arbitrary]: Arbitrary[Sealed[F, A, B]] = Arbitrary[Sealed[F, A, B]] {
+  implicit def ArbSealed[F[_]: Monad, A: Arbitrary, B: Arbitrary]: Arbitrary[Sealed[F, A, B]] = Arbitrary[Sealed[F, A, B]] {
     Gen.oneOf(Arbitrary.arbitrary[B].map(adt => Sealed.result[F](adt)), Arbitrary.arbitrary[A].map(a => Sealed.liftF[F, B](a)))
   }
 
-  implicit def EqXD[F[_]: Monad, A](implicit eqF: Eq[F[ADT]]): Eq[Sealed[F, A, ADT]] = (x: Sealed[F, A, ADT], y: Sealed[F, A, ADT]) => {
+  implicit def EqSealed[F[_]: Monad, A](implicit eqF: Eq[F[ADT]]): Eq[Sealed[F, A, ADT]] = (x: Sealed[F, A, ADT], y: Sealed[F, A, ADT]) => {
     val resultX = x.map(ADT.Case4(_): ADT).run
     val resultY = y.map(ADT.Case4(_): ADT).run
     Eq[F[ADT]].eqv(resultX, resultY)
