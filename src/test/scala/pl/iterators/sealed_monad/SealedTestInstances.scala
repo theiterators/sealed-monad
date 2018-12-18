@@ -13,11 +13,12 @@ trait SealedTestInstances {
     Gen.oneOf(Arbitrary.arbitrary[B].map(adt => Sealed.result[F](adt)), Arbitrary.arbitrary[A].map(a => Sealed.liftF[F, B](a)))
   }
 
-  implicit def EqSealed[F[_]: Monad, A](implicit eqF: Eq[F[ADT]]): Eq[Sealed[F, A, ADT]] = (x: Sealed[F, A, ADT], y: Sealed[F, A, ADT]) => {
-    val resultX = x.map(ADT.Case4(_): ADT).run
-    val resultY = y.map(ADT.Case4(_): ADT).run
-    Eq[F[ADT]].eqv(resultX, resultY)
-  }
+  implicit def EqSealed[F[_]: Monad, A](implicit eqF: Eq[F[ADT]]): Eq[Sealed[F, A, ADT]] =
+    (x: Sealed[F, A, ADT], y: Sealed[F, A, ADT]) => {
+      val resultX = x.map(ADT.Case4(_): ADT).run
+      val resultY = y.map(ADT.Case4(_): ADT).run
+      Eq[F[ADT]].eqv(resultX, resultY)
+    }
 
   implicit def iso[F[_]: Monad]: Isomorphisms[Sealed[F, ?, ADT]] = Isomorphisms.invariant[Sealed[F, ?, ADT]]
 }

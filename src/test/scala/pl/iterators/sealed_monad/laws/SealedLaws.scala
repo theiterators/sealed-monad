@@ -54,7 +54,7 @@ trait SealedLaws[F[_]] {
     def loop(s: Sealed[F, Int, Int], i: Int = 0): Sealed[F, Int, Int] =
       if (i < n) loop(s.semiflatMap(i => M.pure(i + 1)), i + 1) else s.complete(i => M.pure(i))
 
-    val s  = Sealed.liftF[F, Int](0)
+    val s   = Sealed.liftF[F, Int](0)
     val res = loop(s)
     res.run <-> M.pure(n)
   }
@@ -66,7 +66,7 @@ trait SealedLaws[F[_]] {
     def loop(s: Sealed[F, Int, Int], i: Int = 0): Sealed[F, Int, Int] =
       if (i < n) loop(s.map(_ + 1), i + 1) else s.complete(i => M.pure(i))
 
-    val s  = Sealed.liftF[F, Int](-1).flatMap(_ => Sealed.liftF(0))
+    val s   = Sealed.liftF[F, Int](-1).flatMap(_ => Sealed.liftF(0))
     val res = loop(s)
     res.run <-> M.pure(n)
   }
