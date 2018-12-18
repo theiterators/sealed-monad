@@ -114,5 +114,5 @@ private final class SealedMonad[F[_]: Monad, ADT] extends StackSafeMonad[Sealed[
 }
 
 trait SealedInstances {
-  implicit def xdMonad[F[_]: Monad, ADT]: Monad[Sealed[F, ?, ADT]] = new SealedMonad
+  implicit def sealedMonad[F[_]: Monad, ADT]: Monad[Sealed[F, ?, ADT]] = new SealedMonad
 }
