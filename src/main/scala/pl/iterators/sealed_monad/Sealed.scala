@@ -32,8 +32,7 @@ sealed trait Sealed[F[_], +A, ADT] {
 
   def tap[B](f: A => F[B])(implicit F: Functor[F]): Sealed[F, A, ADT] = flatMap(a => Value(F.fmap(f(a))(_ => a)))
 
-  def inspect[B](pf: PartialFunction[Either[ADT, A], B])(implicit F: Functor[F]): Sealed[F, A, ADT] =
-    map(a => Sealed.piggybackF(Right(a), pf)(a))
+  def inspect(pf: PartialFunction[Either[ADT, A], Any])(implicit F: Functor[F]): Sealed[F, A, ADT]
 }
 
 object Sealed extends SealedInstances {
@@ -55,6 +54,8 @@ object Sealed extends SealedInstances {
       * (which is not the case generally with `flatMap`). Thus it is more imporant that `flatMap` is kept stack-safe (and it is)
       */
     override def map[B](f: A => B)(implicit F: Functor[F]) = Computation(current, cont andThen (_.map(f)))
+    override def inspect(pf: PartialFunction[Either[ADT, A], Any])(implicit F: Functor[F]) =
+      Computation(current, cont andThen (_.inspect(pf)))
 
     override def toString = s"Computation($current, ...)"
   }
@@ -63,7 +64,7 @@ object Sealed extends SealedInstances {
     override def map[B](f: Nothing => B)(implicit F: Functor[F])     = this
     override def flatMap[B](f: Nothing => Sealed[F, B, ADT])         = this
 
-    override def inspect[B](pf: PartialFunction[Either[ADT, Nothing], B])(implicit F: Functor[F]) =
+    override def inspect(pf: PartialFunction[Either[ADT, Nothing], Any])(implicit F: Functor[F]) =
       Result(F.fmap(result)(adt => piggybackF(Left(adt), pf)(adt)))
 
     override def toString = s"Result($result)"
@@ -72,7 +73,8 @@ object Sealed extends SealedInstances {
     override protected def step[A1 >: A](implicit F: Monad[F]) = F.fmap(fa)(a => Right(Right(a)))
     override def map[B](f: A => B)(implicit F: Functor[F])     = Value(F.fmap(fa)(f))
 
-    override def toString = s"Value($fa)"
+    override def toString                                                                  = s"Value($fa)"
+    override def inspect(pf: PartialFunction[Either[ADT, A], Any])(implicit F: Functor[F]) = map(a => piggybackF(Right(a), pf)(a))
   }
 
   def liftF[F[_], ADT]                                       = new LiftFPartiallyApplied[F, ADT]
