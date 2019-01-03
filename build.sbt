@@ -1,7 +1,9 @@
+enablePlugins(GitVersioning)
+
 inThisBuild(
   Seq(
     organization := "pl.iterators",
-    version := "0.0.1",
+    git.baseVersion := "0.0.1",
     scalaVersion := "2.12.6",
     scalacOptions := Seq(
       "-feature",
@@ -21,11 +23,12 @@ inThisBuild(
     logBuffered in Test := false,
     scalafmtVersion := "1.4.0",
     scalafmtOnCompile := true
-  ))
+  ) ++ publishing)
 
 name := "sealed"
 moduleName := "sealed"
 description := "Sealed monad"
+bintrayRepository := "sealed-monad"
 
 val cats        = "org.typelevel" %% "cats-core"        % "1.4.0"
 val catsLaws    = "org.typelevel" %% "cats-kernel-laws" % "1.4.0"
@@ -42,7 +45,8 @@ lazy val examples = project
   .settings(
     name := "examples",
     description := "Sealed monad - snippets of example code",
-    moduleName := "sealed-examples"
+    moduleName := "sealed-examples",
+    skip in publish := true
   )
 
 lazy val benchmarks = project
@@ -52,7 +56,8 @@ lazy val benchmarks = project
   .settings(
     name := "benchmarks",
     description := "Sealed monad benchmarks",
-    moduleName := "sealed-benchmarks"
+    moduleName := "sealed-benchmarks",
+    skip in publish := true
   )
 
 aggregateProjects(
@@ -61,3 +66,19 @@ aggregateProjects(
 )
 test / aggregate := false
 addCommandAlias("flame", "benchmarks/jmh:run -p tokens=64 -prof jmh.extras.Async:dir=target/flamegraphs;flameGraphOpts=--width,1900")
+
+lazy val publishing = Seq(
+  publishMavenStyle := true,
+  pomIncludeRepository := const(false),
+  licenses := Seq("Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0")),
+  developers := List(
+    Developer(id = "mrzeznicki",
+              name = "Marcin Rzeźnicki",
+              email = "mrzeznicki@iterato.rs",
+              url = url("https://github.com/marcin-rzeznicki"))),
+  scmInfo := Some(
+    ScmInfo(browseUrl = url("https://github.com/theiterators/sealed-monad"),
+            connection = "scm:git:https://github.com/theiterators/sealed-monad.git")),
+  bintrayOrganization := Some("theiterators"),
+  bintrayReleaseOnPublish := false
+)
