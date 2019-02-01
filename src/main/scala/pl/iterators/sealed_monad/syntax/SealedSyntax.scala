@@ -11,6 +11,8 @@ trait SealedSyntax {
   implicit final def faOptSyntax[F[_], A](fa: F[Option[A]]): SealedFOptAOps[F, A]                = new SealedFOptAOps(fa)
   implicit final def faEitherSyntax[F[_], A, B](fa: F[Either[A, B]]): SealedFAEitherOps[F, A, B] = new SealedFAEitherOps(fa)
   implicit final def sealedSyntax[F[_], A, ADT](s: Sealed[F, A, ADT]): SealedSymbolic[F, A, ADT] = new SealedSymbolic(s)
+  implicit final def optSyntax[A](condOpt: Option[A]): SealedOptOps[A]                           = new SealedOptOps[A](condOpt)
+  implicit final def eitherSyntax[ADT, A](condEither: Either[ADT, A]): SealedEitherOps[ADT, A]   = new SealedEitherOps[ADT, A](condEither)
 }
 
 final class SealedFAOps[F[_], A](private val self: F[A]) extends AnyVal {
@@ -35,6 +37,18 @@ final class SealedFAEitherOps[F[_], A, B](private val self: F[Either[A, B]]) ext
 final class SealedOps[A](private val self: A) extends AnyVal {
   def result[F[_]: Monad]: Sealed[F, Nothing, A]      = Sealed.result[F](self)
   def liftSealed[F[_]: Monad, ADT]: Sealed[F, A, ADT] = Sealed.liftF[F, ADT](self)
+}
+
+final class SealedOptOps[A](private val self: Option[A]) extends AnyVal {
+  def sealCond[F[_]: Monad, ADT] = new SealOptCondPartiallyApplied(self)
+}
+
+final class SealedEitherOps[ADT, A](private val self: Either[ADT, A]) extends AnyVal {
+  def sealCond[F[_]: Monad]: Sealed[F, A, ADT] = Sealed.liftF[F, ADT](self).rethrow
+}
+
+final class SealOptCondPartiallyApplied[A, F[_]: Monad](private val self: Option[A]) {
+  def apply[ADT](ifNone: => ADT): Sealed[F, A, ADT] = self.fold[Sealed[F, A, ADT]](Sealed.result(ifNone))(a => Sealed.liftF[F, ADT](a))
 }
 
 final class SealedSymbolic[F[_], A, ADT](private val self: Sealed[F, A, ADT]) extends AnyVal {
