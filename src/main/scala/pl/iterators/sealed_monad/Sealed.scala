@@ -25,12 +25,16 @@ sealed trait Sealed[F[_], +A, ADT] {
   def rethrow[B](implicit ev: A <:< Either[ADT, B], F: Monad[F]): Sealed[F, B, ADT] =
     flatMap(a => ev(a).fold(adt => Result(F.pure(adt)), b => Value(F.pure(b))))
 
-  def ensure(pred: A => Boolean, orElse: => ADT)(implicit F: Monad[F]): Sealed[F, A, ADT] = ensureOr(pred, _ => orElse)
+  def ensure(pred: A => Boolean, orElse: => ADT)(implicit F: Monad[F]): Sealed[F, A, ADT]    = ensureOr(pred, _ => orElse)
+  def ensureNot(pred: A => Boolean, orElse: => ADT)(implicit F: Monad[F]): Sealed[F, A, ADT] = ensure(a => !pred(a), orElse)
 
   def ensureOr(pred: A => Boolean, orElse: A => ADT)(implicit F: Monad[F]): Sealed[F, A, ADT] =
     attempt(a => Either.cond(pred(a), a, orElse(a)))
 
-  def tap[B](f: A => F[B])(implicit F: Functor[F]): Sealed[F, A, ADT] = flatMap(a => Value(F.fmap(f(a))(_ => a)))
+  def tap[B](f: A => F[B])(implicit F: Functor[F]): Sealed[F, A, ADT] = flatMap(a => Value(F.as(f(a), a)))
+
+  def tapWhen[B](cond: A => Boolean, f: A => F[B])(implicit F: Applicative[F]): Sealed[F, A, ADT] =
+    flatMap(a => if (cond(a)) Value(F.as(f(a), a)) else Value(F.pure(a)))
 
   def inspect(pf: PartialFunction[Either[ADT, A], Any])(implicit F: Functor[F]): Sealed[F, A, ADT]
 }

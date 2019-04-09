@@ -38,6 +38,8 @@ trait SealedLaws[F[_]] {
   def ensureRethrowCoherence[A, B, C](s: Sealed[F, A, C], f: A => Boolean, c: C) =
     s.ensure(f, c) <-> s.map(a => Either.cond(f(a), a, c)).rethrow
 
+  def ensureCoherence[A, B, C](s: Sealed[F, A, C], f: A => Boolean, c: C) = s.ensure(f, c) <-> s.ensureNot(a => !f(a), c)
+
   def inspectElimination[A, B, C](s: Sealed[F, A, C], f: Either[C, A] => Option[B]) = s.inspect(Function.unlift(f)) <-> s
 
   def valueOrIdentity[A, B](fa: F[Option[A]], b: B) =

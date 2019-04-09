@@ -1,7 +1,7 @@
 package pl.iterators.sealed_monad
 
 import cats.laws.discipline.SemigroupalTests.Isomorphisms
-import cats.{Eq, FlatMap, Monad}
+import cats.{Eq, Monad}
 import org.scalacheck._
 
 import scala.language.higherKinds
