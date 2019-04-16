@@ -1,9 +1,9 @@
-package pl.iterators.sealed_monad
+package pl.iterators.sealedmonad
 import cats.{Eq, Monad}
 import org.scalacheck.Prop._
 import org.scalacheck.{Arbitrary, Cogen}
 import org.typelevel.discipline.Laws
-import pl.iterators.sealed_monad.laws.SealedLaws
+import pl.iterators.sealedmonad.laws.SealedLaws
 
 import scala.language.higherKinds
 

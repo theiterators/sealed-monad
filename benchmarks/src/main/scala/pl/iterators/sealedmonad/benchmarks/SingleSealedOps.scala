@@ -1,4 +1,4 @@
-package pl.iterators.sealed_monad.benchmarks
+package pl.iterators.sealedmonad.benchmarks
 
 import java.util.concurrent.TimeUnit
 
@@ -7,7 +7,7 @@ import cats.data.EitherT
 import cats.instances.TryInstances
 import org.openjdk.jmh.annotations._
 import org.openjdk.jmh.infra.Blackhole
-import pl.iterators.sealed_monad.Sealed
+import pl.iterators.sealedmonad.Sealed
 
 import scala.util._
 

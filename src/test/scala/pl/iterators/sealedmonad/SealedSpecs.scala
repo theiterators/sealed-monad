@@ -1,4 +1,4 @@
-package pl.iterators.sealed_monad
+package pl.iterators.sealedmonad
 
 class SealedSpecs extends SealedSuite {
 

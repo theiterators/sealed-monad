@@ -1,4 +1,4 @@
-package pl.iterators.sealed_monad.examples
+package pl.iterators.sealedmonad.examples
 
 import cats.Monad
 import cats.data.{EitherT, OptionT}
@@ -10,7 +10,7 @@ import scala.language.higherKinds
 object Options {
 
   object Example1 {
-    import pl.iterators.sealed_monad.syntax._
+    import pl.iterators.sealedmonad.syntax._
 
     def login[M[_]](email: String,
                     findUser: String => M[Option[User]],
@@ -58,7 +58,7 @@ object Options {
   }
 
   object Example2 {
-    import pl.iterators.sealed_monad.syntax._
+    import pl.iterators.sealedmonad.syntax._
 
     def confirmEmail[M[_]: Monad](token: String,
                                   findAuthMethod: String => M[Option[AuthMethod]],
