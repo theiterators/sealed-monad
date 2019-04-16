@@ -1,4 +1,4 @@
-package pl.iterators.sealed_monad
+package pl.iterators.sealedmonad
 
 import cats._
 import cats.syntax.either._
@@ -53,7 +53,7 @@ object Sealed extends SealedInstances {
     /**
       * Please note that this is NOT stack-safe.
       * Stack will blow up when doing things like
-      * sealed_monad.flatMap { ... }.map(f1).map(f2).(...)
+      * sealedmonad.flatMap { ... }.map(f1).map(f2).(...)
       * Anyhow, this is not as bad as it sounds as f1, f2, ... can be coalesced into one function
       * (which is not the case generally with `flatMap`). Thus it is more imporant that `flatMap` is kept stack-safe (and it is)
       */

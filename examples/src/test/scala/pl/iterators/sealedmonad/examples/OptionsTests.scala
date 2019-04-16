@@ -1,11 +1,11 @@
-package pl.iterators.sealed_monad.examples
+package pl.iterators.sealedmonad.examples
 
 import cats.{Eq, Monad}
 import org.scalacheck.Prop._
 import org.scalacheck._
 import org.typelevel.discipline.Laws
-import pl.iterators.sealed_monad.examples.Options._
-import pl.iterators.sealed_monad.examples.Options._
+import pl.iterators.sealedmonad.examples.Options._
+import pl.iterators.sealedmonad.examples.Options._
 
 import scala.language.higherKinds
 

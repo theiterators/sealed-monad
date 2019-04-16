@@ -1,7 +1,7 @@
-package pl.iterators.sealed_monad.laws
+package pl.iterators.sealedmonad.laws
 import cats.Monad
 import cats.kernel.laws._
-import pl.iterators.sealed_monad.Sealed
+import pl.iterators.sealedmonad.Sealed
 
 import scala.language.higherKinds
 

@@ -1,4 +1,4 @@
-package pl.iterators.sealed_monad.examples
+package pl.iterators.sealedmonad.examples
 
 import scala.concurrent.Future
 

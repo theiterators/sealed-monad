@@ -1,7 +1,7 @@
-package pl.iterators.sealed_monad.syntax
+package pl.iterators.sealedmonad.syntax
 
 import cats.{Functor, Monad}
-import pl.iterators.sealed_monad.Sealed
+import pl.iterators.sealedmonad.Sealed
 
 import scala.language.{higherKinds, implicitConversions}
 

@@ -1,4 +1,4 @@
-package pl.iterators.sealed_monad.benchmarks
+package pl.iterators.sealedmonad.benchmarks
 
 import java.util.concurrent.TimeUnit
 
@@ -30,7 +30,7 @@ object SealedPrograms {
 @Fork(1)
 class SealedPrograms {
   import SealedPrograms._
-  import pl.iterators.sealed_monad.syntax._
+  import pl.iterators.sealedmonad.syntax._
 
   private val tokens = 1024
 

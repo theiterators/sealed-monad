@@ -1,3 +1,3 @@
-package pl.iterators.sealed_monad
+package pl.iterators.sealedmonad
 
 package object syntax extends SealedSyntax

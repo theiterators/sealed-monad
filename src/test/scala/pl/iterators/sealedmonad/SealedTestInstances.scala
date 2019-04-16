@@ -1,4 +1,4 @@
-package pl.iterators.sealed_monad
+package pl.iterators.sealedmonad
 
 import cats.laws.discipline.SemigroupalTests.Isomorphisms
 import cats.{Eq, Monad}
