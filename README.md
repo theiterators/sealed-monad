@@ -113,7 +113,7 @@ If you're curious about Sealed Monad design process, checkout [this amazing vide
 ### Installation
 ```scala
 resolvers += Resolver.bintrayRepo("theiterators", "sealed-monad")
-libraryDependencies += "pl.iterators" %% "sealed" % "0.0.1-a3917c65bdb06a95bc78272de6f4bbb900e4ddf8",
+libraryDependencies += "pl.iterators" %% "sealed" % "0.0.1-a3917c65bdb06a95bc78272de6f4bbb900e4ddf8"
 ```
 
 We'll be moving to Maven Central soon.
