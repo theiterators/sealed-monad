@@ -47,7 +47,7 @@ object Options {
                           mergeAccountsAction: (AuthMethod, User) => M[LoginResponse])(implicit M: Monad[M]): M[LoginResponse] = {
       val s = for {
         user <- findUser(email)
-          .valueOr[LoginResponse](LoginResponse.InvalidCredentials)
+          .valueOr(LoginResponse.InvalidCredentials)
           .ensure(!_.archived, LoginResponse.Deleted)
         userAuthMethod = authMethodFromUserIdF(user.id)
         authMethod <- findAuthMethod(user.id, userAuthMethod.provider).valueOrF(mergeAccountsAction(userAuthMethod, user))

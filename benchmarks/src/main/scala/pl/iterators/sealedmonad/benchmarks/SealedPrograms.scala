@@ -63,8 +63,8 @@ class SealedPrograms {
   @Benchmark
   def benchmark1 = {
     val s = for {
-      _           <- returnOption.valueOr[ADT](SomeCase).ensure(_ != 0, SomeOtherCase)
-      actionValue <- doSomeWork.valueOr[ADT](SomeYetAnotherCase)
+      _           <- returnOption.valueOr(SomeCase).ensure(_ != 0, SomeOtherCase)
+      actionValue <- doSomeWork.valueOr(SomeYetAnotherCase)
     } yield if (actionValue.last == 'a') SomeCase else SomeOtherCase
 
     s.run
@@ -86,8 +86,8 @@ class SealedPrograms {
   @Benchmark
   def benchmark2 = {
     val s = for {
-      m <- returnOption.valueOr[ADT](SomeCase)
-      _ <- doSomeOtherWork(m).valueOr[ADT](SomeOtherCase) >>! (s => M.pure(m + s.toInt))
+      m <- returnOption.valueOr(SomeCase)
+      _ <- doSomeOtherWork(m).valueOr(SomeOtherCase) >>! (s => M.pure(m + s.toInt))
     } yield Result(m)
 
     s.run

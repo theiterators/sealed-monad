@@ -42,7 +42,7 @@ class SingleSealedOps {
 
   @Benchmark
   def completeBenchmark =
-    Sealed.liftF[Try, ADT](x).complete(completeWork).run
+    Sealed.liftF(x).complete(completeWork).run
 
   @Benchmark
   def completeCatsBaseline = Monad[Try].flatMap(Monad[Try].pure(x))(completeWork)
@@ -51,17 +51,17 @@ class SingleSealedOps {
 
   @Benchmark
   def ensureBenchmark =
-    Sealed.liftF[Try, ADT](x).ensureOr(_.abs < 100, orElse = i => if (i > 100) TooBig else TooSmall).map(ensureWork).run
+    Sealed.liftF(x).ensureOr(_.abs < 100, orElse = i => if (i > 100) TooBig else TooSmall).map(ensureWork).run
 
   @Benchmark
   def ensureCatsBaseline = EitherT.rightT[Try, ADT](x).ensureOr(i => if (i > 100) TooBig else TooSmall)(_.abs < 100).map(ensureWork).merge
 
   private val attemptFWork = (i: Int) => {
-    Blackhole.consumeCPU(tokens); Success(if (i > 100) Left(TooBig) else if (i < 100) Left(TooSmall) else Right(i))
+    Blackhole.consumeCPU(tokens); Try(if (i > 100) Left(TooBig) else if (i < 100) Left(TooSmall) else Right(i))
   }
 
   @Benchmark
-  def attemptFBenchmark = Sealed.liftF[Try, ADT](x).attemptF(attemptFWork).map(Ok).run
+  def attemptFBenchmark = Sealed.liftF(x).attemptF(attemptFWork).map(Ok).run
 
   @Benchmark
   def attemptFCatsBaseline = EitherT.rightT[Try, ADT](x).flatMapF(attemptFWork).map(Ok).value
