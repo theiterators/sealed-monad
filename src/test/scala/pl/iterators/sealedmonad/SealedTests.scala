@@ -1,4 +1,5 @@
 package pl.iterators.sealedmonad
+
 import cats.{Eq, Monad}
 import org.scalacheck.Prop._
 import org.scalacheck.{Arbitrary, Cogen}
@@ -14,18 +15,20 @@ trait SealedTests[F[_]] extends Laws with SealedTestInstances {
   import SealedTestInstances.ADT
   import cats.kernel.laws.discipline._
 
-  def tests[A, B](implicit ArbA: Arbitrary[A],
-                  ArbB: Arbitrary[B],
-                  ArbADT: Arbitrary[ADT],
-                  ArbFA: Arbitrary[F[A]],
-                  ArbFB: Arbitrary[F[B]],
-                  ArbFOpt: Arbitrary[F[Option[A]]],
-                  ArbFAB: Arbitrary[F[Either[A, B]]],
-                  ArbFADT: Arbitrary[F[ADT]],
-                  CoA: Cogen[A],
-                  CoADT: Cogen[ADT],
-                  EqFADT: Eq[F[ADT]],
-                  EqFInt: Eq[F[Int]]) =
+  def tests[A, B](
+      implicit ArbA: Arbitrary[A],
+      ArbB: Arbitrary[B],
+      ArbADT: Arbitrary[ADT],
+      ArbFA: Arbitrary[F[A]],
+      ArbFB: Arbitrary[F[B]],
+      ArbFOpt: Arbitrary[F[Option[A]]],
+      ArbFAB: Arbitrary[F[Either[A, B]]],
+      ArbFADT: Arbitrary[F[ADT]],
+      CoA: Cogen[A],
+      CoADT: Cogen[ADT],
+      EqFADT: Eq[F[ADT]],
+      EqFInt: Eq[F[Int]]
+  ) =
     new SimpleRuleSet(
       name = "combinators",
       "value map"                                    -> forAll(laws.valueMapReduction[A, B] _),

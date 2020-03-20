@@ -44,9 +44,11 @@ object SealedTestInstances {
     case class Case4[A](a: A) extends ADT
 
     implicit val EqADT: Eq[ADT] = Eq.fromUniversalEquals[ADT]
+
     implicit val ArbADT: Arbitrary[ADT] = Arbitrary[ADT] {
       Gen.oneOf(Gen.const(Case1), Gen.const(Case2), Gen.const(Case3))
     }
+
     implicit val CogenADT: Cogen[ADT] = Cogen[Int].contramap {
       case Case1 => 1
       case Case2 => 2
