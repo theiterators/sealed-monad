@@ -12,13 +12,15 @@ object Options {
   object Example1 {
     import pl.iterators.sealedmonad.syntax._
 
-    def login[M[_]](email: String,
-                    findUser: String => M[Option[User]],
-                    findAuthMethod: (Long, Provider) => M[Option[AuthMethod]],
-                    issueTokenFor: User => String,
-                    checkAuthMethodAction: AuthMethod => Boolean,
-                    authMethodFromUserIdF: Long => AuthMethod,
-                    mergeAccountsAction: (AuthMethod, User) => M[LoginResponse])(implicit M: Monad[M]): M[LoginResponse] =
+    def login[M[_]](
+        email: String,
+        findUser: String => M[Option[User]],
+        findAuthMethod: (Long, Provider) => M[Option[AuthMethod]],
+        issueTokenFor: User => String,
+        checkAuthMethodAction: AuthMethod => Boolean,
+        authMethodFromUserIdF: Long => AuthMethod,
+        mergeAccountsAction: (AuthMethod, User) => M[LoginResponse]
+    )(implicit M: Monad[M]): M[LoginResponse] =
       findUser(email).flatMap {
         case None =>
           M.pure(LoginResponse.InvalidCredentials)
@@ -38,13 +40,15 @@ object Options {
           }
       }
 
-    def sealedLogin[M[_]](email: String,
-                          findUser: String => M[Option[User]],
-                          findAuthMethod: (Long, Provider) => M[Option[AuthMethod]],
-                          issueTokenFor: User => String,
-                          checkAuthMethodAction: AuthMethod => Boolean,
-                          authMethodFromUserIdF: Long => AuthMethod,
-                          mergeAccountsAction: (AuthMethod, User) => M[LoginResponse])(implicit M: Monad[M]): M[LoginResponse] = {
+    def sealedLogin[M[_]](
+        email: String,
+        findUser: String => M[Option[User]],
+        findAuthMethod: (Long, Provider) => M[Option[AuthMethod]],
+        issueTokenFor: User => String,
+        checkAuthMethodAction: AuthMethod => Boolean,
+        authMethodFromUserIdF: Long => AuthMethod,
+        mergeAccountsAction: (AuthMethod, User) => M[LoginResponse]
+    )(implicit M: Monad[M]): M[LoginResponse] = {
       val s = for {
         user <- findUser(email)
           .valueOr(LoginResponse.InvalidCredentials)
@@ -60,12 +64,14 @@ object Options {
   object Example2 {
     import pl.iterators.sealedmonad.syntax._
 
-    def confirmEmail[M[_]: Monad](token: String,
-                                  findAuthMethod: String => M[Option[AuthMethod]],
-                                  findUser: Long => M[Option[User]],
-                                  upsertAuthMethod: AuthMethod => M[Int],
-                                  issueTokenFor: User => String,
-                                  confirmMethod: AuthMethod => AuthMethod): M[ConfirmResponse] = {
+    def confirmEmail[M[_]: Monad](
+        token: String,
+        findAuthMethod: String => M[Option[AuthMethod]],
+        findUser: Long => M[Option[User]],
+        upsertAuthMethod: AuthMethod => M[Int],
+        issueTokenFor: User => String,
+        confirmMethod: AuthMethod => AuthMethod
+    ): M[ConfirmResponse] = {
       val userT = for {
         method <- EitherT.fromOptionF(findAuthMethod(token), ifNone = ConfirmResponse.MethodNotFound)
         user   <- EitherT.fromOptionF(findUser(method.userId), ifNone = ConfirmResponse.UserNotFound: ConfirmResponse)
@@ -77,12 +83,14 @@ object Options {
       }.merge
     }
 
-    def sealedConfirmEmail[M[_]: Monad](token: String,
-                                        findAuthMethod: String => M[Option[AuthMethod]],
-                                        findUser: Long => M[Option[User]],
-                                        upsertAuthMethod: AuthMethod => M[Int],
-                                        issueTokenFor: User => String,
-                                        confirmMethod: AuthMethod => AuthMethod): M[ConfirmResponse] = {
+    def sealedConfirmEmail[M[_]: Monad](
+        token: String,
+        findAuthMethod: String => M[Option[AuthMethod]],
+        findUser: Long => M[Option[User]],
+        upsertAuthMethod: AuthMethod => M[Int],
+        issueTokenFor: User => String,
+        confirmMethod: AuthMethod => AuthMethod
+    ): M[ConfirmResponse] = {
       val s = for {
         method <- findAuthMethod(token).valueOr[ConfirmResponse](ConfirmResponse.MethodNotFound)
         user   <- findUser(method.userId).valueOr[ConfirmResponse](ConfirmResponse.UserNotFound) ! upsertAuthMethod(confirmMethod(method))

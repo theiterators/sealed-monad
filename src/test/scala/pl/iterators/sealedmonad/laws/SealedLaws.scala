@@ -1,4 +1,5 @@
 package pl.iterators.sealedmonad.laws
+
 import cats.Monad
 import cats.kernel.laws._
 import pl.iterators.sealedmonad.Sealed
