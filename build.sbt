@@ -1,5 +1,6 @@
 import com.jsuereth.sbtpgp.PgpKeys
 import sbtrelease.ReleasePlugin.autoImport._
+import sbtrelease.ReleaseStateTransformations._
 
 val scala_2_11             = "2.11.12"
 val scala_2_12             = "2.12.8"
@@ -99,5 +100,19 @@ lazy val sealedMonad = project
     publishToNexus, /*must be set for sbt-release*/
     releaseCrossBuild := false,
     publishArtifact := false,
+    releaseProcess := Seq(
+      checkSnapshotDependencies,
+      inquireVersions,
+      releaseStepCommandAndRemaining("+publishLocalSigned"),
+      releaseStepCommandAndRemaining("+clean"),
+      releaseStepCommandAndRemaining("+test"),
+      setReleaseVersion,
+      commitReleaseVersion,
+      tagRelease,
+      releaseStepCommandAndRemaining("+publishSigned"),
+      setNextVersion,
+      commitNextVersion,
+      pushChanges
+    ),
     crossScalaVersions := Nil
   )
