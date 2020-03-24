@@ -1,61 +1,64 @@
 import com.jsuereth.sbtpgp.PgpKeys
 import sbtrelease.ReleasePlugin.autoImport._
+import sbtrelease.ReleaseStateTransformations._
 
-val scala_2_11             = "2.11.12"
-val scala_2_12             = "2.12.8"
-val scala_2_13             = "2.13.1"
-val mainScalaVersion       = scala_2_13
-val supportedScalaVersions = Seq(scala_2_11, scala_2_12, scala_2_13)
+// Dependencies
 
-lazy val baseSettings = Seq(
-  organization := "pl.iterators",
-  organizationName := "Iterators",
-  organizationHomepage := Some(url("https://iterato.rs")),
-  homepage := Some(url("https://github.com/theiterators/sealed-monad")),
-  scalaVersion := mainScalaVersion,
-  scalacOptions := Seq("-deprecation", "-unchecked", "-feature", "-encoding", "utf8"),
-  scalafmtOnCompile := true
-)
-
-val catsVersion = "2.0.0"
+val catsVersion                  = "2.0.0"
 val castsTestkitScalatestVersion = "1.0.1"
 
-libraryDependencies ++= Seq (
-  "org.typelevel" %% "cats-core" % catsVersion,
-  "org.typelevel" %% "cats-laws" % catsVersion % Test,
-  "org.typelevel" %% "cats-testkit" % catsVersion % Test,
+libraryDependencies ++= Seq(
+  "org.typelevel" %% "cats-core"              % catsVersion,
+  "org.typelevel" %% "cats-laws"              % catsVersion % Test,
+  "org.typelevel" %% "cats-testkit"           % catsVersion % Test,
   "org.typelevel" %% "cats-testkit-scalatest" % castsTestkitScalatestVersion % Test
 )
 
 addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.full)
 
-lazy val publishToNexus = publishTo := {
-  val nexus = "https://oss.sonatype.org/"
-  if (isSnapshot.value)
-    Some("snapshots" at nexus + "content/repositories/snapshots")
-  else
-    Some("releases" at nexus + "service/local/staging/deploy/maven2")
-}
+// Multiple Scala versions support
 
-lazy val crossBuildSettings = Seq(crossScalaVersions := supportedScalaVersions, releaseCrossBuild := true)
+val scala_2_12             = "2.12.8"
+val scala_2_13             = "2.13.1"
+val mainScalaVersion       = scala_2_13
+val supportedScalaVersions = Seq(scala_2_12, scala_2_13)
 
-lazy val publishSettings = Seq(
-  publishToNexus,
+lazy val baseSettings = Seq(
+// Scala settings
+  homepage := Some(url("https://github.com/theiterators/sealed-monad")),
+  scalaVersion := mainScalaVersion,
+  scalacOptions := Seq("-deprecation", "-unchecked", "-feature", "-encoding", "utf8"),
+  scalafmtOnCompile := true,
+// Sonatype settings
+  publishTo := sonatypePublishTo.value,
+  sonatypeProfileName := "pl.iterators",
   publishMavenStyle := true,
-  pomIncludeRepository := const(true),
-  licenses := Seq("MIT License" -> url("http://opensource.org/licenses/MIT")),
+  licenses := Seq("Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0")),
+  organization := "pl.iterators",
+  organizationName := "Iterators",
+  organizationHomepage := Some(url("https://iterato.rs")),
+  developers := List(
+    Developer(id = "mrzeznicki",
+      name = "Marcin Rzeźnicki",
+      email = "mrzeznicki@iterato.rs",
+      url = url("https://github.com/marcin-rzeznicki"))),
   scmInfo := Some(
-    ScmInfo(browseUrl = url("https://github.com/theiterators/sealed-monad"),
-            connection = "scm:git:https://github.com/theiterators/sealed-monad.git")),
+    ScmInfo(
+      browseUrl = url("https://github.com/theiterators/sealed-monad"),
+      connection = "scm:git:https://github.com/theiterators/sealed-monad.git"
+    )
+  ),
+  credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
   releasePublishArtifactsAction := PgpKeys.publishSigned.value,
-  credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")
-) ++ crossBuildSettings
+  crossScalaVersions := supportedScalaVersions,
+  releaseCrossBuild := true
+)
 
 lazy val noPublishSettings =
   Seq(
-    publishToNexus /*must be set for sbt-release*/,
     publishArtifact := false,
     releaseCrossBuild := false,
+    skip in publish := true,
     releasePublishArtifactsAction := {
       val projectName = name.value
       streams.value.log.warn(s"Publishing for $projectName is turned off")
@@ -64,27 +67,25 @@ lazy val noPublishSettings =
 
 lazy val examples = project
   .in(file("examples"))
-  .dependsOn(LocalRootProject % "compile->compile;test->test")
+  .dependsOn(sealedMonad % "test->test;compile->compile")
   .settings(baseSettings: _*)
   .settings(noPublishSettings: _*)
   .settings(
     name := "examples",
     description := "Sealed monad - snippets of example code",
-    moduleName := "sealed-examples",
-    skip in publish := true
+    moduleName := "sealed-examples"
   )
 
 lazy val benchmarks = project
   .in(file("benchmarks"))
-  .dependsOn(LocalRootProject)
+  .dependsOn(sealedMonad % "test->test;compile->compile")
   .enablePlugins(JmhPlugin)
   .settings(baseSettings: _*)
   .settings(noPublishSettings: _*)
   .settings(
     name := "benchmarks",
     description := "Sealed monad benchmarks",
-    moduleName := "sealed-benchmarks",
-    skip in publish := true
+    moduleName := "sealed-benchmarks"
   )
 
 addCommandAlias("flame", "benchmarks/jmh:run -p tokens=64 -prof jmh.extras.Async:dir=target/flamegraphs;flameGraphOpts=--width,1900")
@@ -92,12 +93,21 @@ addCommandAlias("flame", "benchmarks/jmh:run -p tokens=64 -prof jmh.extras.Async
 lazy val sealedMonad = project
   .in(file("."))
   .settings(baseSettings: _*)
-  .settings(publishSettings: _*)
   .settings(
     name := "sealed-monad",
     description := "Library to eliminate the boilerplate code",
-    publishToNexus, /*must be set for sbt-release*/
-    releaseCrossBuild := false,
-    publishArtifact := false,
-    crossScalaVersions := Nil
+    releaseProcess := Seq(
+      checkSnapshotDependencies,
+      inquireVersions,
+      releaseStepCommandAndRemaining("+publishLocalSigned"),
+      releaseStepCommandAndRemaining("+clean"),
+      releaseStepCommandAndRemaining("+test"),
+      setReleaseVersion,
+      commitReleaseVersion,
+      tagRelease,
+      releaseStepCommandAndRemaining("+publishSigned"),
+      setNextVersion,
+      commitNextVersion,
+      pushChanges
+    )
   )
