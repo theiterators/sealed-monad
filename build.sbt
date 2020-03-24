@@ -4,13 +4,13 @@ import sbtrelease.ReleaseStateTransformations._
 
 // Dependencies
 
-val catsVersion = "2.0.0"
+val catsVersion                  = "2.0.0"
 val castsTestkitScalatestVersion = "1.0.1"
 
-libraryDependencies ++= Seq (
-  "org.typelevel" %% "cats-core" % catsVersion,
-  "org.typelevel" %% "cats-laws" % catsVersion % Test,
-  "org.typelevel" %% "cats-testkit" % catsVersion % Test,
+libraryDependencies ++= Seq(
+  "org.typelevel" %% "cats-core"              % catsVersion,
+  "org.typelevel" %% "cats-laws"              % catsVersion % Test,
+  "org.typelevel" %% "cats-testkit"           % catsVersion % Test,
   "org.typelevel" %% "cats-testkit-scalatest" % castsTestkitScalatestVersion % Test
 )
 
@@ -18,33 +18,36 @@ addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVers
 
 // Multiple Scala versions support
 
-val scala_2_11             = "2.11.12"
 val scala_2_12             = "2.12.8"
 val scala_2_13             = "2.13.1"
 val mainScalaVersion       = scala_2_13
-val supportedScalaVersions = Seq(scala_2_11, scala_2_12, scala_2_13)
+val supportedScalaVersions = Seq(scala_2_12, scala_2_13)
 
+lazy val baseSettings = Seq(
 // Scala settings
-homepage := Some(url("https://github.com/theiterators/sealed-monad"))
-scalaVersion := mainScalaVersion
-scalacOptions := Seq("-deprecation", "-unchecked", "-feature", "-encoding", "utf8")
-scalafmtOnCompile := true
-
+  homepage := Some(url("https://github.com/theiterators/sealed-monad")),
+  scalaVersion := mainScalaVersion,
+  scalacOptions := Seq("-deprecation", "-unchecked", "-feature", "-encoding", "utf8"),
+  scalafmtOnCompile := true,
 // Sonatype settings
-publishTo := sonatypePublishTo.value
-sonatypeProfileName := "pl.iterators"
-publishMavenStyle := true
-licenses := Seq("Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0"))
-organization := "pl.iterators"
-organizationName := "Iterators"
-organizationHomepage := Some(url("https://iterato.rs"))
-scmInfo := Some(
-  ScmInfo(browseUrl = url("https://github.com/theiterators/sealed-monad"),
-    connection = "scm:git:https://github.com/theiterators/sealed-monad.git"))
-credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")
-releasePublishArtifactsAction := PgpKeys.publishSigned.value
-crossScalaVersions := supportedScalaVersions
-releaseCrossBuild := true
+  publishTo := sonatypePublishTo.value,
+  sonatypeProfileName := "pl.iterators",
+  publishMavenStyle := true,
+  licenses := Seq("Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0")),
+  organization := "pl.iterators",
+  organizationName := "Iterators",
+  organizationHomepage := Some(url("https://iterato.rs")),
+  scmInfo := Some(
+    ScmInfo(
+      browseUrl = url("https://github.com/theiterators/sealed-monad"),
+      connection = "scm:git:https://github.com/theiterators/sealed-monad.git"
+    )
+  ),
+  credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
+  releasePublishArtifactsAction := PgpKeys.publishSigned.value,
+  crossScalaVersions := supportedScalaVersions,
+  releaseCrossBuild := true
+)
 
 lazy val noPublishSettings =
   Seq(
@@ -59,7 +62,8 @@ lazy val noPublishSettings =
 
 lazy val examples = project
   .in(file("examples"))
-  .dependsOn(sealedMonad)
+  .dependsOn(sealedMonad % "test->test;compile->compile")
+  .settings(baseSettings: _*)
   .settings(noPublishSettings: _*)
   .settings(
     name := "examples",
@@ -69,19 +73,21 @@ lazy val examples = project
 
 lazy val benchmarks = project
   .in(file("benchmarks"))
-  .dependsOn(sealedMonad)
+  .dependsOn(sealedMonad % "test->test;compile->compile")
   .enablePlugins(JmhPlugin)
+  .settings(baseSettings: _*)
   .settings(noPublishSettings: _*)
   .settings(
     name := "benchmarks",
     description := "Sealed monad benchmarks",
-    moduleName := "sealed-benchmarks",
+    moduleName := "sealed-benchmarks"
   )
 
 addCommandAlias("flame", "benchmarks/jmh:run -p tokens=64 -prof jmh.extras.Async:dir=target/flamegraphs;flameGraphOpts=--width,1900")
 
 lazy val sealedMonad = project
   .in(file("."))
+  .settings(baseSettings: _*)
   .settings(
     name := "sealed-monad",
     description := "Library to eliminate the boilerplate code",
