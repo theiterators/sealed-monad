@@ -37,6 +37,11 @@ lazy val baseSettings = Seq(
   organization := "pl.iterators",
   organizationName := "Iterators",
   organizationHomepage := Some(url("https://iterato.rs")),
+  developers := List(
+    Developer(id = "mrzeznicki",
+      name = "Marcin Rzeźnicki",
+      email = "mrzeznicki@iterato.rs",
+      url = url("https://github.com/marcin-rzeznicki"))),
   scmInfo := Some(
     ScmInfo(
       browseUrl = url("https://github.com/theiterators/sealed-monad"),
