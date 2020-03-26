@@ -4,6 +4,7 @@ import cats.Monad
 import cats.data.{EitherT, OptionT}
 import cats.syntax.flatMap._
 import cats.syntax.functor._
+import pl.iterators.sealedmonad.Sealed
 
 import scala.language.higherKinds
 
@@ -98,6 +99,43 @@ object Options {
 
       s.run
     }
+
+    class Example3[M[_]: Monad] {
+      import pl.iterators.sealedmonad.syntax._
+
+      def sealedLogin(email: String): M[LoginResponse] =
+        (for {
+          user        <- findAndValidateUser(email)
+          authMethod  <- findOrMergeAuthMethod(user)
+          loginResult <- validateAuthMethodAction(user, authMethod)
+        } yield loginResult).run
+
+      // three below private methods should have understandable, descriptive names
+      private def findAndValidateUser(email: String): Sealed[M, User, LoginResponse] =
+        findUser(email)
+          .valueOr(LoginResponse.InvalidCredentials)
+          .ensure(!_.archived, LoginResponse.Deleted)
+
+      private def findOrMergeAuthMethod(user: User): Sealed[M, AuthMethod, LoginResponse] = {
+        val userAuthMethod = authMethodFromUserIdF(user.id)
+        findAuthMethod(user.id, userAuthMethod.provider).valueOrF(mergeAccountsAction(userAuthMethod, user))
+      }
+
+      private def validateAuthMethodAction(user: User, authMethod: AuthMethod): Sealed[M, LoginResponse, Nothing] = {
+        val result =
+          if (checkAuthMethodAction(authMethod)) LoginResponse.LoggedIn(issueTokenFor(user)) else LoginResponse.InvalidCredentials
+        Monad[M].pure(result).seal
+      }
+
+      // below methods could be coming from different services
+      def findUser: String => M[Option[User]]                         = ???
+      def findAuthMethod: (Long, Provider) => M[Option[AuthMethod]]   = ???
+      def authMethodFromUserIdF: Long => AuthMethod                   = ???
+      def mergeAccountsAction: (AuthMethod, User) => M[LoginResponse] = ???
+      def checkAuthMethodAction: AuthMethod => Boolean                = ???
+      def issueTokenFor: User => String                               = ???
+    }
+
   }
 
   trait AuthMethod {

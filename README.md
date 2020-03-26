@@ -105,6 +105,37 @@ def sealedLogin(email: String,
 
 It's short, nice-looking and reads top-down.
 
+Below approach focuses on making main service flow clear, understandable in few seconds and wholely contained in for-comprehension. Compiling example in [here](https://github.com/theiterators/sealed-monad/blob/master/examples/src/main/scala/pl/iterators/sealedmonad/examples/Options.scala#L103).
+```scala
+class Example3[M[_]: Monad] {
+  import pl.iterators.sealedmonad.syntax._
+
+  // whole main service flow contained in 3 descriptive words in for comprehension
+  def sealedLogin(email: String): M[LoginResponse] =
+    (for {
+      user        <- findAndValidateUser(email)
+      authMethod  <- findOrMergeAuthMethod(user)
+      loginResult <- validateAuthMethodAction(user, authMethod)
+    } yield loginResult).run
+
+  // three below private methods should have understandable, descriptive names. They hide boiler plate and contain error validation
+  private def findAndValidateUser(email: String): Sealed[M, User, LoginResponse] = {...}
+  private def findOrMergeAuthMethod(user: User): Sealed[M, AuthMethod, LoginResponse] = {...}
+  private def validateAuthMethodAction(user: User, authMethod: AuthMethod): Sealed[M, LoginResponse, Nothing] = {...}
+
+  // below methods implementation could be coming from different services
+  def findUser: String => M[Option[User]]                         = ???
+  def findAuthMethod: (Long, Provider) => M[Option[AuthMethod]]   = ???
+  def authMethodFromUserIdF: Long => AuthMethod                   = ???
+  def mergeAccountsAction: (AuthMethod, User) => M[LoginResponse] = ???
+  def checkAuthMethodAction: AuthMethod => Boolean                = ???
+  def issueTokenFor: User => String                               = ???
+}
+```
+
+The main flow consists just of 3 descriptive sentences that anyone can read and comprehend in few seconds. Everything is part of for-comprehension, which comes with the price of a little more boiler plate. Just a short look is required to 
+understand what is happening in the service. Descriptive private method names serve as a "documentation". If one "need to go deeper" into the validation details then it will go to the body of the private method. Otherwise the validation/error handling code doesn't bloat understanding of the main method flow.
+
 For more examples go [here](https://github.com/theiterators/sealed-monad/blob/master/examples/src/main/scala/pl/iterators/sealedmonad/examples/Options.scala).
 
 If you're curious about Sealed Monad design process, checkout [this amazing video by Marcin Rzeźnicki](https://www.youtube.com/watch?v=uZ7IFQTYPic).
