@@ -15,8 +15,8 @@ trait SealedTests[F[_]] extends Laws with SealedTestInstances {
   import SealedTestInstances.ADT
   import cats.kernel.laws.discipline._
 
-  def tests[A, B](
-      implicit ArbA: Arbitrary[A],
+  def tests[A, B](implicit
+      ArbA: Arbitrary[A],
       ArbB: Arbitrary[B],
       ArbADT: Arbitrary[ADT],
       ArbFA: Arbitrary[F[A]],
@@ -60,9 +60,10 @@ trait SealedTests[F[_]] extends Laws with SealedTestInstances {
 
 object SealedTests {
 
-  def apply[F[_]](implicit ev: Monad[F]) = new SealedTests[F] {
-    override implicit val M: Monad[F] = ev
-    override val laws: SealedLaws[F]  = SealedLaws[F](ev)
-  }
+  def apply[F[_]](implicit ev: Monad[F]) =
+    new SealedTests[F] {
+      override implicit val M: Monad[F] = ev
+      override val laws: SealedLaws[F]  = SealedLaws[F](ev)
+    }
 
 }

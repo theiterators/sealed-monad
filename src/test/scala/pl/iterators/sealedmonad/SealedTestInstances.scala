@@ -9,17 +9,20 @@ import scala.language.higherKinds
 trait SealedTestInstances {
   import SealedTestInstances.ADT
 
-  implicit def ArbSealed1[F[_], A: Arbitrary, B: Arbitrary]: Arbitrary[Sealed[F, A, B]] = Arbitrary[Sealed[F, A, B]] {
-    Gen.oneOf(ArbSealed2[F, A].arbitrary, ArbSealed3[F, B].arbitrary)
-  }
+  implicit def ArbSealed1[F[_], A: Arbitrary, B: Arbitrary]: Arbitrary[Sealed[F, A, B]] =
+    Arbitrary[Sealed[F, A, B]] {
+      Gen.oneOf(ArbSealed2[F, A].arbitrary, ArbSealed3[F, B].arbitrary)
+    }
 
-  implicit def ArbSealed2[F[_], A: Arbitrary]: Arbitrary[Sealed[F, A, Nothing]] = Arbitrary[Sealed[F, A, Nothing]] {
-    Arbitrary.arbitrary[A].map(a => Sealed.liftF[F, A](a))
-  }
+  implicit def ArbSealed2[F[_], A: Arbitrary]: Arbitrary[Sealed[F, A, Nothing]] =
+    Arbitrary[Sealed[F, A, Nothing]] {
+      Arbitrary.arbitrary[A].map(a => Sealed.liftF[F, A](a))
+    }
 
-  implicit def ArbSealed3[F[_], A: Arbitrary]: Arbitrary[Sealed[F, Nothing, A]] = Arbitrary[Sealed[F, Nothing, A]] {
-    Arbitrary.arbitrary[A].map(a => Sealed.seal[F, A](a))
-  }
+  implicit def ArbSealed3[F[_], A: Arbitrary]: Arbitrary[Sealed[F, Nothing, A]] =
+    Arbitrary[Sealed[F, Nothing, A]] {
+      Arbitrary.arbitrary[A].map(a => Sealed.seal[F, A](a))
+    }
 
   implicit def EqSealed1[F[_]: Monad, A](implicit eqF: Eq[F[ADT]]): Eq[Sealed[F, A, ADT]] =
     (x: Sealed[F, A, ADT], y: Sealed[F, A, ADT]) => {
