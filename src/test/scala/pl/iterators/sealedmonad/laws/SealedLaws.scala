@@ -85,8 +85,9 @@ trait SealedLaws[F[_]] {
 
 object SealedLaws {
 
-  def apply[F[_]](implicit ev: Monad[F]) = new SealedLaws[F] {
-    override implicit val M: Monad[F] = ev
-  }
+  def apply[F[_]](implicit ev: Monad[F]) =
+    new SealedLaws[F] {
+      override implicit val M: Monad[F] = ev
+    }
 
 }
