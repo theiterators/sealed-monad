@@ -2,7 +2,7 @@ package pl.iterators.sealedmonad.side_effects
 
 import cats.Id
 import pl.iterators.sealedmonad.syntax._
-import cats.instances.arraySeq._
+import cats.instances.option._
 
 trait SealedSideEffectsTap {
 
