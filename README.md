@@ -144,7 +144,7 @@ If you're curious about Sealed Monad design process, checkout [this amazing vide
 
 ### Installation
 ```scala
-libraryDependencies += "pl.iterators" %% "sealed-monad" % "1.0.0"
+libraryDependencies += "pl.iterators" %% "sealed-monad" % "1.1.0"
 ```
 
 ### Known problems
