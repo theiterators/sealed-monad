@@ -4,7 +4,7 @@ import sbtrelease.ReleaseStateTransformations._
 
 // Dependencies
 
-val catsVersion                  = "2.2.0"
+val catsVersion                  = "2.3.0"
 val castsTestkitScalatestVersion = "2.0.0"
 
 libraryDependencies ++= Seq(
