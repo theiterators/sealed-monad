@@ -18,8 +18,8 @@ addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.3" cross CrossVers
 
 // Multiple Scala versions support
 
-val scala_2_12             = "2.12.8"
-val scala_2_13             = "2.13.1"
+val scala_2_12             = "2.12.13"
+val scala_2_13             = "2.13.4"
 val mainScalaVersion       = scala_2_13
 val supportedScalaVersions = Seq(scala_2_12, scala_2_13)
 
