@@ -11,9 +11,31 @@ sealed trait Sealed[F[_], +A, +ADT] {
   def map[B](f: A => B): Sealed[F, B, ADT]                                    = Sealed.FlatMap(this, (a: A) => Sealed.Value(f(a)))
   def flatMap[B, ADT1 >: ADT](f: A => Sealed[F, B, ADT1]): Sealed[F, B, ADT1] = Sealed.FlatMap(this, f)
 
-  final def semiflatMap[B](f: A => F[B]): Sealed[F, B, ADT]                      = flatMap(a => Sealed.Effect(Eval.later(f(a))))
-  final def complete[ADT1 >: ADT](f: A => ADT1): Sealed[F, Nothing, ADT1]        = flatMap(a => Sealed.Result(f(a)))
-  final def completeWith[ADT1 >: ADT](f: A => F[ADT1]): Sealed[F, Nothing, ADT1] = flatMap(a => Sealed.ResultF(Eval.later(f(a))))
+  final def semiflatMap[B](f: A => F[B]): Sealed[F, B, ADT]                             = flatMap(a => Sealed.Effect(Eval.later(f(a))))
+  final def complete[ADT1 >: ADT](f: A => ADT1): Sealed[F, Nothing, ADT1]               = flatMap(a => Sealed.Result(f(a)))
+  final def completeWith[ADT1 >: ADT](f: A => F[ADT1]): Sealed[F, Nothing, ADT1]        = flatMap(a => Sealed.ResultF(Eval.later(f(a))))
+
+  def biSemiflatMap[B, C, ADT1 >: ADT](fa: ADT1 => F[ADT1], fb: B => F[C])(implicit ev: A <:< Either[ADT1, B]): Sealed[F, C, ADT1] =
+    flatMap(a =>
+      ev(a) match {
+        case Left(a)  => Sealed.result(fa(a))
+        case Right(b) => Sealed.apply(fb(b))
+      }
+    )
+
+  def biSemiflatTap[B, C, ADT1 >: ADT](fa: ADT1 => F[C], fb: B => F[C])(implicit
+      F: Monad[F],
+      ev: A <:< Either[ADT1, B]
+  ): Sealed[F, B, ADT1] =
+    biSemiflatMap((a: ADT1) => F.as(fa(a), a), (b: B) => F.as(fb(b), b))
+
+  def leftSemiflatMap[B, ADT1 >: ADT](f: ADT1 => F[ADT1])(implicit ev: A <:< Either[ADT1, B]): Sealed[F, B, ADT1] =
+    flatMap(a =>
+      ev(a) match {
+        case Left(a)      => Sealed.result(f(a)).rethrow
+        case r @ Right(_) => Sealed.liftF(r.asInstanceOf[Either[ADT, B]]).rethrow
+      }
+    )
 
   final def rethrow[B, ADT1 >: ADT](implicit ev: A <:< Either[ADT1, B]): Sealed[F, B, ADT1] =
     flatMap(a => ev(a).fold(Sealed.Result(_), Sealed.Value(_)))
