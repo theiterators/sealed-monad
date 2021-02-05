@@ -15,25 +15,11 @@ sealed trait Sealed[F[_], +A, +ADT] {
   final def complete[ADT1 >: ADT](f: A => ADT1): Sealed[F, Nothing, ADT1]               = flatMap(a => Sealed.Result(f(a)))
   final def completeWith[ADT1 >: ADT](f: A => F[ADT1]): Sealed[F, Nothing, ADT1]        = flatMap(a => Sealed.ResultF(Eval.later(f(a))))
 
-  def biSemiflatMap[B, C, ADT1 >: ADT](fa: ADT1 => F[ADT1], fb: B => F[C])(implicit ev: A <:< Either[ADT1, B]): Sealed[F, C, ADT1] =
+  def biSemiflatMap[B, C, ADT1 >: ADT](fa: ADT1 => F[C], fb: B => F[C])(implicit ev: A <:< Either[ADT1, B]): Sealed[F, C, ADT1] =
     flatMap(a =>
       ev(a) match {
-        case Left(a)  => Sealed.result(fa(a))
+        case Left(a)  => Sealed.apply(fa(a))
         case Right(b) => Sealed.apply(fb(b))
-      }
-    )
-
-  def biSemiflatTap[B, C, ADT1 >: ADT](fa: ADT1 => F[C], fb: B => F[C])(implicit
-      F: Monad[F],
-      ev: A <:< Either[ADT1, B]
-  ): Sealed[F, B, ADT1] =
-    biSemiflatMap((a: ADT1) => F.as(fa(a), a), (b: B) => F.as(fb(b), b))
-
-  def leftSemiflatMap[B, ADT1 >: ADT](f: ADT1 => F[ADT1])(implicit ev: A <:< Either[ADT1, B]): Sealed[F, B, ADT1] =
-    flatMap(a =>
-      ev(a) match {
-        case Left(a)      => Sealed.result(f(a)).rethrow
-        case r @ Right(_) => Sealed.liftF(r.asInstanceOf[Either[ADT, B]]).rethrow
       }
     )
 

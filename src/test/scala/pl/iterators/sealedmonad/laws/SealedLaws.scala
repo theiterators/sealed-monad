@@ -21,6 +21,13 @@ trait SealedLaws[F[_]] {
   def valueSemiflatMapReduction[A, B](fa: F[A], f: A => F[B])    = Sealed(fa).semiflatMap(f) <-> Sealed(fa >>= f)
   def resultSemiflatMapElimination[A, B](fb: F[B], f: A => F[B]) = Sealed.result(fb).semiflatMap(f) <-> Sealed.result(fb)
 
+  def biSemiflatMapCoherentWithSemiflatMap[A, B](fa: F[Option[A]], b: B) =
+    Sealed(fa).map(Either.fromOption(_, b)).biSemiflatMap[A, Int, B](_ => M.pure(0), _ => M.pure(1)) <-> Sealed(fa)
+      .semiflatMap {
+        case None    => M.pure(0)
+        case Some(_) => M.pure(1)
+      }
+
   def valueCompleteIdentity[A, B](fa: F[A], f: A => F[B])  = Sealed(fa).completeWith(f) <-> Sealed.result(fa >>= f)
   def resultCompleteElimination[A, B](fb: F[B], f: A => B) = Sealed.result(fb).complete(f) <-> Sealed.result(fb)
 
