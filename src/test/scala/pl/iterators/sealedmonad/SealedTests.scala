@@ -15,16 +15,20 @@ trait SealedTests[F[_]] extends Laws with SealedTestInstances {
   import SealedTestInstances.ADT
   import cats.kernel.laws.discipline._
 
-  def tests[A, B](implicit
+  def tests[A, B, C](implicit
       ArbA: Arbitrary[A],
       ArbB: Arbitrary[B],
+      ArbC: Arbitrary[C],
       ArbADT: Arbitrary[ADT],
       ArbFA: Arbitrary[F[A]],
       ArbFB: Arbitrary[F[B]],
+      ArbFC: Arbitrary[F[C]],
       ArbFOpt: Arbitrary[F[Option[A]]],
       ArbFAB: Arbitrary[F[Either[A, B]]],
+      ArbFAC: Arbitrary[F[Either[A, C]]],
       ArbFADT: Arbitrary[F[ADT]],
       CoA: Cogen[A],
+      CoB: Cogen[B],
       CoADT: Cogen[ADT],
       EqFADT: Eq[F[ADT]],
       EqFInt: Eq[F[Int]]
@@ -37,6 +41,7 @@ trait SealedTests[F[_]] extends Laws with SealedTestInstances {
       "semiflatMap consistent with flatMap"          -> forAll(laws.valueSemiflatMapReduction[A, B] _),
       "result semiflatMap short-circuits"            -> forAll(laws.resultSemiflatMapElimination[A, ADT] _),
       "biSemiflatMap consistent with semiflatMap"    -> forAll(laws.biSemiflatMapCoherentWithSemiflatMap[A, ADT] _),
+      "biflatTap coherent with identity"             -> forAll(laws.biflatTapCoherentWithIdentity[A, B, ADT] _),
       "complete consistent with result + flatMap"    -> forAll(laws.valueCompleteIdentity[A, ADT] _),
       "completeWith consistent with complete + unit" -> forAll(laws.completeWithCoherence[A, ADT] _),
       "result complete short-circuits"               -> forAll(laws.resultCompleteElimination[A, ADT] _),
@@ -54,6 +59,7 @@ trait SealedTests[F[_]] extends Laws with SealedTestInstances {
       "inspect does not change instance"             -> forAll(laws.inspectElimination[A, B, ADT] _),
       "valueOr"                                      -> forAll(laws.valueOrIdentity[A, ADT] _),
       "handleError"                                  -> forAll(laws.handleErrorIdentity[A, B, ADT] _),
+      "biMap"                                        -> forAll(laws.biMapIdentity[A, B, ADT, C] _),
       "semiflatMap stack-safety"                     -> lzy(laws.semiflatMapStackSafety)
       //"map stack-safety" -> lzy(laws.computationMapStackSafety)
     )

@@ -5,7 +5,7 @@ import pl.iterators.sealedmonad.side_effects.SealedSideEffectsTap
 
 class SealedSpecs extends SealedSuite {
 
-  checkAll("Sealed", SealedTests[Option].tests[String, Int])
+  checkAll("Sealed", SealedTests[Option].tests[String, Int, String])
 
   test("inspect side effect not invoked") {
     assert(SealedSideEffectsInspect.simplyInvoke)

@@ -23,6 +23,12 @@ sealed trait Sealed[F[_], +A, +ADT] {
       }
     )
 
+  def biflatTap[B, C, ADT1 >: ADT](fa: ADT1 => F[C], fb: A => F[B])(implicit F: Monad[F]): Sealed[F, A, ADT1] =
+    foldM(
+      (adt: ADT) => Sealed.ResultF(Eval.later(fa(adt)).map(_ => F.pure(adt))),
+      a => Sealed.Effect(Eval.later(fb(a)).map(_ => F.pure(a)))
+    )
+
   final def rethrow[B, ADT1 >: ADT](implicit ev: A <:< Either[ADT1, B]): Sealed[F, B, ADT1] =
     flatMap(a => ev(a).fold(Sealed.Result(_), Sealed.Value(_)))
   final def attempt[B, ADT1 >: ADT](f: A => Either[ADT1, B]): Sealed[F, B, ADT1]     = map(f).rethrow
@@ -119,6 +125,10 @@ object Sealed extends SealedInstances {
     }
 
   def handleError[F[_], A, B, ADT](fa: F[Either[A, B]])(f: A => ADT): Sealed[F, B, ADT] = Sealed(fa).attempt(_.leftMap(f))
+
+  def biMap[F[_], A, B, C, ADT](fa: F[Either[A, B]])(f: A => ADT)(fb: B => C): Sealed[F, C, ADT] =
+    Sealed(fa).attempt(_.leftMap(f).map(fb))
+
 }
 
 private final class SealedMonad[F[_], ADT] extends StackSafeMonad[Sealed[F, ?, ADT]] {

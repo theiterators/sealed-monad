@@ -3,6 +3,7 @@ package pl.iterators.sealedmonad.laws
 import cats.Monad
 import cats.kernel.laws._
 import pl.iterators.sealedmonad.Sealed
+import pl.iterators.sealedmonad.SealedTestInstances.ADT
 
 import scala.language.higherKinds
 
@@ -27,6 +28,11 @@ trait SealedLaws[F[_]] {
         case None    => M.pure(0)
         case Some(_) => M.pure(1)
       }
+
+  def biflatTapCoherentWithIdentity[A, B, C](fa: F[Option[A]], b: C) =
+    Sealed(fa).attempt(Either.fromOption(_, b)).biflatTap[Int, Int, C](_ => M.pure(0), _ => M.pure(1)) <-> Sealed(fa).attempt(
+      Either.fromOption(_, b)
+    )
 
   def valueCompleteIdentity[A, B](fa: F[A], f: A => F[B])  = Sealed(fa).completeWith(f) <-> Sealed.result(fa >>= f)
   def resultCompleteElimination[A, B](fb: F[B], f: A => B) = Sealed.result(fb).complete(f) <-> Sealed.result(fb)
@@ -64,6 +70,9 @@ trait SealedLaws[F[_]] {
 
   def handleErrorIdentity[A, B, C](fab: F[Either[A, B]], f: A => C) =
     Sealed.handleError(fab)(f) <-> Sealed(fab).attempt(_.leftMap(f))
+
+  def biMapIdentity[A, B, C, D](fab: F[Either[A, B]], f: A => C, fb: B => D) =
+    Sealed.biMap(fab)(f)(fb) <-> Sealed(fab).attempt(_.leftMap(f).map(fb))
 
   lazy val semiflatMapStackSafety = {
     val n = 50000
