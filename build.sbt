@@ -31,7 +31,10 @@ lazy val baseSettings = Seq(
 // Scala settings
   homepage := Some(url("https://github.com/theiterators/sealed-monad")),
   scalaVersion := mainScalaVersion,
-  scalacOptions := Seq("-deprecation", "-unchecked", "-feature", "-encoding", "utf8", "-language:implicitConversions", "-Ykind-projector", "-Xignore-scala2-macros"),
+  scalacOptions := Seq("-deprecation", "-unchecked", "-feature", "-encoding", "utf8") ++ 
+  (if (isDotty.value)
+   Seq("-language:implicitConversions", "-Ykind-projector", "-Xignore-scala2-macros")
+    else Nil),
   scalafmtOnCompile := true,
 // Sonatype settings
   publishTo := sonatypePublishTo.value,
