@@ -78,9 +78,8 @@ object Options {
         user   <- EitherT.fromOptionF(findUser(method.userId), ifNone = ConfirmResponse.UserNotFound: ConfirmResponse)
       } yield (method, user)
 
-      userT.semiflatMap {
-        case (method, user) =>
-          upsertAuthMethod(confirmMethod(method)).map(_ => ConfirmResponse.Confirmed(issueTokenFor(user)))
+      userT.semiflatMap { case (method, user) =>
+        upsertAuthMethod(confirmMethod(method)).map(_ => ConfirmResponse.Confirmed(issueTokenFor(user)))
       }.merge
     }
 

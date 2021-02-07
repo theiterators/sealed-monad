@@ -49,11 +49,11 @@ object Sealed extends SealedInstances {
 
     override def step[A1 >: A, ADT1 >: ADT](implicit F: Applicative[F]) =
       current match {
-        case Value(a)         => F.pure(Left(cont(a)))
-        case Effect(fa)       => F.fmap(fa.value)(a0 => Left(cont(a0)))
-        case FlatMap(prev, g) => F.pure(Left(prev.flatMap(runCont(g))))
-        case Fold(prev, l, r) => F.pure(Left(Fold(prev, runCont(l), runCont(r))))
-        case _                => sys.error("impossible")
+        case Value(a)                                      => F.pure(Left(cont(a)))
+        case Effect(fa)                                    => F.fmap(fa.value)(a0 => Left(cont(a0)))
+        case FlatMap(prev, g)                              => F.pure(Left(prev.flatMap(runCont(g))))
+        case Fold(prev, l: (ADT => Sealed[F, A0, ADT]), r) => F.pure(Left(Fold(prev, runCont(l), runCont(r))))
+        case _                                             => sys.error("impossible")
       }
   }
 
@@ -84,14 +84,14 @@ object Sealed extends SealedInstances {
   ) extends Sealed[F, A, ADT] {
     def runFold[B](f: B => Sealed[F, A0, ADT]) = f andThen (_.foldM(left, right))
 
-    override def step[A1 >: A, ADT1 >: ADT](implicit F: Applicative[F]) =
+    override def step[A1 >: A, ADT1 >: ADT](implicit F: Applicative[F]): F[Either[Sealed[F, A1, ADT1], Either[ADT1, A1]]] =
       value match {
-        case Result(adt)      => F.pure(Left(left(adt)))
-        case ResultF(fadt)    => F.fmap(fadt.value)(adt => Left(left(adt)))
-        case Value(a)         => F.pure(Left(right(a)))
-        case Effect(fa)       => F.fmap(fa.value)(a0 => Left(right(a0)))
-        case FlatMap(prev, f) => F.pure(Left(prev.flatMap(runFold(f))))
-        case Fold(v0, l0, r0) => F.pure(Left(Fold(v0, runFold(l0), runFold(r0))))
+        case Result(adt)                                    => F.pure(Left(left(adt)))
+        case ResultF(fadt)                                  => F.fmap(fadt.value)(adt => Left(left(adt)))
+        case Value(a)                                       => F.pure(Left(right(a)))
+        case Effect(fa)                                     => F.fmap(fa.value)(a0 => Left(right(a0)))
+        case FlatMap(prev, f)                               => F.pure(Left(prev.flatMap(runFold(f))))
+        case Fold(v0, l0: (ADT1 => Sealed[F, A0, ADT]), r0) => F.pure(Left(Fold(v0, runFold(l0), runFold(r0))))
       }
   }
 
@@ -113,7 +113,7 @@ object Sealed extends SealedInstances {
   def handleError[F[_], A, B, ADT](fa: F[Either[A, B]])(f: A => ADT): Sealed[F, B, ADT] = Sealed(fa).attempt(_.leftMap(f))
 }
 
-private final class SealedMonad[F[_], ADT] extends StackSafeMonad[Sealed[F, ?, ADT]] {
+private final class SealedMonad[F[_], ADT] extends StackSafeMonad[Sealed[F, *, ADT]] {
   override def pure[A](x: A)                                                   = Sealed.liftF(x)
   override def flatMap[A, B](fa: Sealed[F, A, ADT])(f: A => Sealed[F, B, ADT]) = fa.flatMap(f)
   override def map[A, B](fa: Sealed[F, A, ADT])(f: A => B)                     = fa.map(f)
@@ -121,5 +121,5 @@ private final class SealedMonad[F[_], ADT] extends StackSafeMonad[Sealed[F, ?, A
 }
 
 trait SealedInstances {
-  implicit def sealedMonad[F[_], ADT]: Monad[Sealed[F, ?, ADT]] = new SealedMonad
+  implicit def sealedMonad[F[_], ADT]: Monad[Sealed[F, *, ADT]] = new SealedMonad
 }

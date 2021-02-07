@@ -77,9 +77,8 @@ class SealedPrograms {
       s <- EitherT.fromOptionF(doSomeOtherWork(m), ifNone = SomeOtherCase: ADT)
     } yield (m, s)
 
-    userT.semiflatMap {
-      case (m, s) =>
-        M.pure(m + s.toInt).map(_ => Result(m))
+    userT.semiflatMap { case (m, s) =>
+      M.pure(m + s.toInt).map(_ => Result(m))
     }.merge
   }
 
