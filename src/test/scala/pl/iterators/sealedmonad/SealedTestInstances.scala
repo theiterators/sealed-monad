@@ -34,7 +34,7 @@ trait SealedTestInstances {
   implicit def EqSealed2[F[_]: Monad, A](implicit eqF: Eq[F[ADT]]): Eq[Sealed[F, A, Nothing]] =
     EqSealed1[F, A].asInstanceOf[Eq[Sealed[F, A, Nothing]]]
 
-  implicit def iso[F[_]]: Isomorphisms[Sealed[F, ?, ADT]] = Isomorphisms.invariant[Sealed[F, ?, ADT]]
+  implicit def iso[F[_]]: Isomorphisms[Sealed[F, *, ADT]] = Isomorphisms.invariant[Sealed[F, *, ADT]]
 }
 
 object SealedTestInstances {
