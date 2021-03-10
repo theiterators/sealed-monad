@@ -22,8 +22,8 @@ trait SealedLaws[F[_]] {
   def valueSemiflatMapReduction[A, B](fa: F[A], f: A => F[B])    = Sealed(fa).semiflatMap(f) <-> Sealed(fa >>= f)
   def resultSemiflatMapElimination[A, B](fb: F[B], f: A => F[B]) = Sealed.result(fb).semiflatMap(f) <-> Sealed.result(fb)
 
-  def biflatTapCoherentWithIdentity[A, B, C](fa: F[Option[A]], b: C) =
-    Sealed(fa).attempt(Either.fromOption(_, b)).biflatTap[Int, Int, C](_ => M.pure(0), _ => M.pure(1)) <-> Sealed(fa).attempt(
+  def biSemiflatTapCoherentWithIdentity[A, B, C](fa: F[Option[A]], b: C) =
+    Sealed(fa).attempt(Either.fromOption(_, b)).biSemiflatTap[Int, Int](_ => M.pure(0), _ => M.pure(1)) <-> Sealed(fa).attempt(
       Either.fromOption(_, b)
     )
 
@@ -64,8 +64,8 @@ trait SealedLaws[F[_]] {
   def handleErrorIdentity[A, B, C](fab: F[Either[A, B]], f: A => C) =
     Sealed.handleError(fab)(f) <-> Sealed(fab).attempt(_.leftMap(f))
 
-  def biMapIdentity[A, B, C, D](fab: F[Either[A, B]], f: A => C, fb: B => D) =
-    Sealed.biMap(fab)(f)(fb) <-> Sealed(fab).attempt(_.leftMap(f).map(fb))
+  def bimapIdentity[A, B, C, D](fab: F[Either[A, B]], f: A => C, fb: B => D) =
+    Sealed.bimap(fab)(f)(fb) <-> Sealed(fab).attempt(_.leftMap(f).map(fb))
 
   lazy val semiflatMapStackSafety = {
     val n = 50000

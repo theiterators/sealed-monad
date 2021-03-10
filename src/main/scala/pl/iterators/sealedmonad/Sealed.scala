@@ -15,19 +15,13 @@ sealed trait Sealed[F[_], +A, +ADT] {
   final def complete[ADT1 >: ADT](f: A => ADT1): Sealed[F, Nothing, ADT1]        = flatMap(a => Sealed.Result(f(a)))
   final def completeWith[ADT1 >: ADT](f: A => F[ADT1]): Sealed[F, Nothing, ADT1] = flatMap(a => Sealed.ResultF(Eval.later(f(a))))
 
-  def biSemiflatMap[B, C, ADT1 >: ADT](fa: ADT1 => F[ADT1], fb: B => F[C])(implicit ev: A <:< Either[ADT1, B]): Sealed[F, C, ADT1] =
-    flatMap(a =>
-      ev(a) match {
-        case Left(a)  => Sealed.result(fa(a))
-        case Right(b) => Sealed.apply(fb(b))
-      }
-    )
+  def biSemiflatMap[B, ADT1 >: ADT](fa: ADT => F[ADT1], fb: A => F[B])(implicit F: Applicative[F]): Sealed[F, B, ADT1] =
+    either
+      .semiflatMap(_.fold[F[Either[ADT1, B]]](adt => F.map(fa(adt))(Left(_)), a => F.map(fb(a))(Right(_))))
+      .rethrow
 
-  def biflatTap[B, C, ADT1 >: ADT](fa: ADT1 => F[C], fb: A => F[B])(implicit F: Monad[F]): Sealed[F, A, ADT1] =
-    foldM(
-      (adt: ADT) => Sealed.ResultF(Eval.later(fa(adt)).map(_ => F.pure(adt))),
-      a => Sealed.Effect(Eval.later(fb(a)).map(_ => F.pure(a)))
-    )
+  def biSemiflatTap[B, C](fa: ADT => F[C], fb: A => F[B])(implicit F: Monad[F]): Sealed[F, A, ADT] =
+    biSemiflatMap[A, ADT](adt => F.as(fa(adt), adt), a => F.as(fb(a), a))
 
   final def rethrow[B, ADT1 >: ADT](implicit ev: A <:< Either[ADT1, B]): Sealed[F, B, ADT1] =
     flatMap(a => ev(a).fold(Sealed.Result(_), Sealed.Value(_)))
@@ -126,7 +120,7 @@ object Sealed extends SealedInstances {
 
   def handleError[F[_], A, B, ADT](fa: F[Either[A, B]])(f: A => ADT): Sealed[F, B, ADT] = Sealed(fa).attempt(_.leftMap(f))
 
-  def biMap[F[_], A, B, C, ADT](fa: F[Either[A, B]])(f: A => ADT)(fb: B => C): Sealed[F, C, ADT] =
+  def bimap[F[_], A, B, C, ADT](fa: F[Either[A, B]])(f: A => ADT)(fb: B => C): Sealed[F, C, ADT] =
     Sealed(fa).attempt(_.leftMap(f).map(fb))
 
 }

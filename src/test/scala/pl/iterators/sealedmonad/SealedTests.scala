@@ -40,7 +40,7 @@ trait SealedTests[F[_]] extends Laws with SealedTestInstances {
       "result flatMap short-circuits"                -> forAll(laws.resultFlatMapElimination[A, ADT] _),
       "semiflatMap consistent with flatMap"          -> forAll(laws.valueSemiflatMapReduction[A, B] _),
       "result semiflatMap short-circuits"            -> forAll(laws.resultSemiflatMapElimination[A, ADT] _),
-      "biflatTap coherent with identity"             -> forAll(laws.biflatTapCoherentWithIdentity[A, B, ADT] _),
+      "biSemiflatTap coherent with identity"             -> forAll(laws.biSemiflatTapCoherentWithIdentity[A, B, ADT] _),
       "complete consistent with result + flatMap"    -> forAll(laws.valueCompleteIdentity[A, ADT] _),
       "completeWith consistent with complete + unit" -> forAll(laws.completeWithCoherence[A, ADT] _),
       "result complete short-circuits"               -> forAll(laws.resultCompleteElimination[A, ADT] _),
@@ -58,7 +58,7 @@ trait SealedTests[F[_]] extends Laws with SealedTestInstances {
       "inspect does not change instance"             -> forAll(laws.inspectElimination[A, B, ADT] _),
       "valueOr"                                      -> forAll(laws.valueOrIdentity[A, ADT] _),
       "handleError"                                  -> forAll(laws.handleErrorIdentity[A, B, ADT] _),
-      "biMap"                                        -> forAll(laws.biMapIdentity[A, B, ADT, C] _),
+      "bimap"                                        -> forAll(laws.bimapIdentity[A, B, ADT, C] _),
       "semiflatMap stack-safety"                     -> lzy(laws.semiflatMapStackSafety)
       //"map stack-safety" -> lzy(laws.computationMapStackSafety)
     )
