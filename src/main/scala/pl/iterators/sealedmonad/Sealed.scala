@@ -2,7 +2,7 @@ package pl.iterators.sealedmonad
 
 import cats._
 import Function.const
-
+import cats.syntax.bitraverse._
 import scala.language.higherKinds
 
 sealed trait Sealed[F[_], +A, +ADT] {
@@ -11,17 +11,24 @@ sealed trait Sealed[F[_], +A, +ADT] {
   def map[B](f: A => B): Sealed[F, B, ADT]                                    = Sealed.FlatMap(this, (a: A) => Sealed.Value(f(a)))
   def flatMap[B, ADT1 >: ADT](f: A => Sealed[F, B, ADT1]): Sealed[F, B, ADT1] = Sealed.FlatMap(this, f)
 
-  final def semiflatMap[B](f: A => F[B]): Sealed[F, B, ADT]                      = flatMap(a => Sealed.Effect(Eval.later(f(a))))
-  final def complete[ADT1 >: ADT](f: A => ADT1): Sealed[F, Nothing, ADT1]        = flatMap(a => Sealed.Result(f(a)))
-  final def completeWith[ADT1 >: ADT](f: A => F[ADT1]): Sealed[F, Nothing, ADT1] = flatMap(a => Sealed.ResultF(Eval.later(f(a))))
+  final def semiflatMap[B](f: A => F[B]): Sealed[F, B, ADT] = flatMap(a => Sealed.Effect(Eval.later(f(a))))
 
-  def biSemiflatMap[B, ADT1 >: ADT](fa: ADT => F[ADT1], fb: A => F[B])(implicit F: Applicative[F]): Sealed[F, B, ADT1] =
+  final def leftSemiflatMap[ADT1 >: ADT](f: ADT => F[ADT1])(implicit F: Applicative[F]): Sealed[F, A, ADT1] =
+    either.semiflatMap(_.leftTraverse(f(_))).rethrow
+
+  final def leftSemiflatTap[C](f: ADT => F[C])(implicit F: Applicative[F]): Sealed[F, A, ADT] =
+    leftSemiflatMap(adt => F.as(f(adt), adt))
+
+  final def biSemiflatMap[B, ADT1 >: ADT](fa: ADT => F[ADT1], fb: A => F[B])(implicit F: Applicative[F]): Sealed[F, B, ADT1] =
     either
-      .semiflatMap(_.fold[F[Either[ADT1, B]]](adt => F.map(fa(adt))(Left(_)), a => F.map(fb(a))(Right(_))))
+      .semiflatMap(_.bitraverse(adt => fa(adt), a => fb(a)))
       .rethrow
 
-  def biSemiflatTap[B, C](fa: ADT => F[C], fb: A => F[B])(implicit F: Monad[F]): Sealed[F, A, ADT] =
+  final def biSemiflatTap[B, C](fa: ADT => F[C], fb: A => F[B])(implicit F: Applicative[F]): Sealed[F, A, ADT] =
     biSemiflatMap[A, ADT](adt => F.as(fa(adt), adt), a => F.as(fb(a), a))
+
+  final def complete[ADT1 >: ADT](f: A => ADT1): Sealed[F, Nothing, ADT1]        = flatMap(a => Sealed.Result(f(a)))
+  final def completeWith[ADT1 >: ADT](f: A => F[ADT1]): Sealed[F, Nothing, ADT1] = flatMap(a => Sealed.ResultF(Eval.later(f(a))))
 
   final def rethrow[B, ADT1 >: ADT](implicit ev: A <:< Either[ADT1, B]): Sealed[F, B, ADT1] =
     flatMap(a => ev(a).fold(Sealed.Result(_), Sealed.Value(_)))
@@ -125,7 +132,7 @@ object Sealed extends SealedInstances {
 
 }
 
-private final class SealedMonad[F[_], ADT] extends StackSafeMonad[Sealed[F, ?, ADT]] {
+private final class SealedMonad[F[_], ADT] extends StackSafeMonad[Sealed[F, *, ADT]] {
   override def pure[A](x: A)                                                   = Sealed.liftF(x)
   override def flatMap[A, B](fa: Sealed[F, A, ADT])(f: A => Sealed[F, B, ADT]) = fa.flatMap(f)
   override def map[A, B](fa: Sealed[F, A, ADT])(f: A => B)                     = fa.map(f)
@@ -133,5 +140,5 @@ private final class SealedMonad[F[_], ADT] extends StackSafeMonad[Sealed[F, ?, A
 }
 
 trait SealedInstances {
-  implicit def sealedMonad[F[_], ADT]: Monad[Sealed[F, ?, ADT]] = new SealedMonad
+  implicit def sealedMonad[F[_], ADT]: Monad[Sealed[F, *, ADT]] = new SealedMonad
 }
