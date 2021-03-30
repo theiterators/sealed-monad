@@ -22,7 +22,16 @@ trait SealedLaws[F[_]] {
   def valueSemiflatMapReduction[A, B](fa: F[A], f: A => F[B])    = Sealed(fa).semiflatMap(f) <-> Sealed(fa >>= f)
   def resultSemiflatMapElimination[A, B](fb: F[B], f: A => F[B]) = Sealed.result(fb).semiflatMap(f) <-> Sealed.result(fb)
 
-  def biSemiflatMapCoherence[A, B, C](fa: F[A], fab: A => F[B], fcd: A => F[C]) =
+  def resultLeftSemiflatMapIdentity[A, B](fa: F[A], fab: A => F[B]) =
+    Sealed.result(fa).leftSemiflatMap(fab) <-> Sealed.result(fa >>= fab)
+
+  def valueLeftSemiflatMapElimination[A, B](fa: F[A], fab: A => F[B]) =
+    Sealed(fa).leftSemiflatMap(fab) <-> Sealed(fa)
+
+  def resultBiSemiflatMapCoherence[A, B, C](fa: F[A], fab: A => F[B], fcd: A => F[C]) =
+    Sealed.result(fa).biSemiflatMap(fab, fcd) <-> Sealed.result(fa).leftSemiflatMap(fab).semiflatMap(fcd)
+
+  def valueBiSemiflatMapCoherence[A, B, C](fa: F[A], fab: A => F[B], fcd: A => F[C]) =
     Sealed(fa).biSemiflatMap(fab, fcd) <-> Sealed(fa).leftSemiflatMap(fab).semiflatMap(fcd)
 
   def biSemiflatTapCoherentWithIdentity[A, B, C](fa: F[Option[A]], b: C) =

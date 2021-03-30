@@ -13,15 +13,19 @@ sealed trait Sealed[F[_], +A, +ADT] {
 
   final def semiflatMap[B](f: A => F[B]): Sealed[F, B, ADT] = flatMap(a => Sealed.Effect(Eval.later(f(a))))
 
-  final def leftSemiflatMap[ADT1 >: ADT](f: ADT => F[ADT1])(implicit F: Applicative[F]): Sealed[F, A, ADT1] =
-    either.semiflatMap(_.leftTraverse(f(_))).rethrow
+  final def leftSemiflatMap[ADT1](f: ADT => F[ADT1])(implicit F: Applicative[F]): Sealed[F, A, ADT1] =
+    either
+      .semiflatMap(_.leftTraverse(f))
+      .asInstanceOf[Sealed[F, Either[ADT1, A], ADT1]]
+      .rethrow
 
   final def leftSemiflatTap[C](f: ADT => F[C])(implicit F: Applicative[F]): Sealed[F, A, ADT] =
     leftSemiflatMap(adt => F.as(f(adt), adt))
 
-  final def biSemiflatMap[B, ADT1 >: ADT](fa: ADT => F[ADT1], fb: A => F[B])(implicit F: Applicative[F]): Sealed[F, B, ADT1] =
+  final def biSemiflatMap[B, ADT1](fa: ADT => F[ADT1], fb: A => F[B])(implicit F: Applicative[F]): Sealed[F, B, ADT1] =
     either
-      .semiflatMap(_.bitraverse(adt => fa(adt), a => fb(a)))
+      .semiflatMap(_.bitraverse(fa, fb))
+      .asInstanceOf[Sealed[F, Either[ADT1, B], ADT1]]
       .rethrow
 
   final def biSemiflatTap[B, C](fa: ADT => F[C], fb: A => F[B])(implicit F: Applicative[F]): Sealed[F, A, ADT] =
