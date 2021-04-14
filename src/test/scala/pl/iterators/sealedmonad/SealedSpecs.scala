@@ -1,11 +1,10 @@
 package pl.iterators.sealedmonad
 
-import pl.iterators.sealedmonad.side_effects.SealedSideEffectsInspect
-import pl.iterators.sealedmonad.side_effects.SealedSideEffectsTap
+import pl.iterators.sealedmonad.side_effects.{SealedSideEffectsInspect, SealedSideEffectsSemiflatTap, SealedSideEffectsTap}
 
 class SealedSpecs extends SealedSuite {
 
-  checkAll("Sealed", SealedTests[Option].tests[String, Int])
+  checkAll("Sealed", SealedTests[Option].tests[String, Int, String])
 
   test("inspect side effect not invoked") {
     assert(SealedSideEffectsInspect.simplyInvoke)
@@ -88,4 +87,51 @@ class SealedSpecs extends SealedSuite {
   test("tapWhenNegative with negative ensure side effect not invoked") {
     assert(SealedSideEffectsTap.notInvokeOnNegativeEnsureWithNegativeTapWhen)
   }
+  test("do not invoke leftSemiflatTap on value") {
+    assert(SealedSideEffectsSemiflatTap.notInvokeOnValueLeftSemiflatTap)
+  }
+  test("do not invoke leftSemiflatTap on Some(_).valueOr") {
+    assert(SealedSideEffectsSemiflatTap.notInvokeOnValueOrOnSomeLeftSemiflatTap)
+  }
+  test("invoke leftSemiflatTap on None.valueOr") {
+    assert(SealedSideEffectsSemiflatTap.invokeOnValueOrOnNoneLeftSemiflatTap)
+  }
+  test("do not invoke leftSemiflatTap on positive ensure check") {
+    assert(SealedSideEffectsSemiflatTap.notInvokeOnPositiveEnsureLeftSemiflatTap)
+  }
+  test("invoke leftSemiflatTap on negative ensure check") {
+    assert(SealedSideEffectsSemiflatTap.invokeOnNegativeEnsureLeftSemiflatTap)
+  }
+  test("do not invoke left function of biSemiflatTap on value") {
+    assert(SealedSideEffectsSemiflatTap.notInvokeLeftFunctionOnValueBiSemiflatTap)
+  }
+  test("do not invoke left function of biSemiflatTap on Some(_).valueOr") {
+    assert(SealedSideEffectsSemiflatTap.notInvokeLeftFunctionOnValueOrOnSomeBiSemiflatTap)
+  }
+  test("invoke left function of biSemiflatTap on None.valueOr") {
+    assert(SealedSideEffectsSemiflatTap.invokeLeftFunctionOnValueOrOnNoneBiSemiflatTap)
+  }
+  test("do not invoke left function of biSemiflatTap on positive ensure check") {
+    assert(SealedSideEffectsSemiflatTap.notInvokeLeftFunctionOnPositiveEnsureBiSemiflatTap)
+  }
+  test("invoke left function of biSemiflatTap on negative ensure check") {
+    assert(SealedSideEffectsSemiflatTap.invokeLeftFunctionOnNegativeEnsureBiSemiflatTap)
+  }
+
+  test("invoke right function of biSemiflatTap on value") {
+    assert(SealedSideEffectsSemiflatTap.invokeRightFunctionOnValueBiSemiflatTap)
+  }
+  test("invoke right function of biSemiflatTap on Some(_).valueOr") {
+    assert(SealedSideEffectsSemiflatTap.invokeRightFunctionOnValueOrOnSomeBiSemiflatTap)
+  }
+  test("do not invoke right function of biSemiflatTap on None.valueOr") {
+    assert(SealedSideEffectsSemiflatTap.notInvokeRightFunctionOnValueOrOnNoneBiSemiflatTap)
+  }
+  test("invoke right function of biSemiflatTap on positive ensure check") {
+    assert(SealedSideEffectsSemiflatTap.invokeRightFunctionOnPositiveEnsureBiSemiflatTap)
+  }
+  test("do not invoke right function of biSemiflatTap on negative ensure check") {
+    assert(SealedSideEffectsSemiflatTap.notInvokeRightFunctionOnNegativeEnsureBiSemiflatTap)
+  }
+
 }
