@@ -1,6 +1,4 @@
 addSbtPlugin("pl.project13.scala" % "sbt-jmh"      % "0.4.3")
 addSbtPlugin("org.scalameta"      % "sbt-scalafmt" % "2.4.3")
-addSbtPlugin("pl.project13.scala" % "sbt-jmh"      % "0.3.4")
 addSbtPlugin("com.github.sbt"  % "sbt-release"  % "1.1.0")
-addSbtPlugin("org.xerial.sbt"     % "sbt-sonatype" % "3.9.9")
-addSbtPlugin("com.github.sbt"       % "sbt-pgp"      % "2.1.2")
+addSbtPlugin("com.geirsson" % "sbt-ci-release" % "1.5.7")
