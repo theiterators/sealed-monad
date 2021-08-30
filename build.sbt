@@ -1,11 +1,28 @@
 import com.jsuereth.sbtpgp.PgpKeys
+import sbt.CrossVersion
 import sbtrelease.ReleasePlugin.autoImport._
 import sbtrelease.ReleaseStateTransformations._
+import sbt._, Keys._
+
+
+
+
+
+// Multiple Scala versions support
+
+val isDotty = Def.setting { CrossVersion.partialVersion(scalaVersion.value).exists(_._1 != 2) }
+
+val scala_2_12             = "2.12.13"
+val scala_2_13             = "2.13.4"
+val dotty                  = "3.0.0"
+val mainScalaVersion       = dotty
+val supportedScalaVersions = Seq(scala_2_12, scala_2_13, dotty)
+
 
 // Dependencies
 
-val catsVersion                  = "2.3.1"
-val castsTestkitScalatestVersion = "2.1.1"
+val catsVersion                  = "2.6.1"
+val castsTestkitScalatestVersion = "2.1.5"
 
 libraryDependencies ++= Seq(
   "org.typelevel" %% "cats-core"              % catsVersion,
@@ -15,17 +32,10 @@ libraryDependencies ++= Seq(
 )
 
 libraryDependencies ++= (
-    if(isDotty.value) Nil 
-    else 
-    Seq(compilerPlugin("org.typelevel" %% "kind-projector" % "0.11.3" cross CrossVersion.full))
-)
-// Multiple Scala versions support
+  if(isDotty.value) Nil
+  else
+    Seq(compilerPlugin("org.typelevel" %% "kind-projector" % "0.11.3" cross CrossVersion.full)))
 
-val scala_2_12             = "2.12.13"
-val scala_2_13             = "2.13.4"
-val dotty                  = "3.0.0-M3"
-val mainScalaVersion       = scala_2_13
-val supportedScalaVersions = Seq(scala_2_12, scala_2_13, dotty)
 
 lazy val baseSettings = Seq(
 // Scala settings
