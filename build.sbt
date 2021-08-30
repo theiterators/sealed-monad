@@ -1,14 +1,7 @@
 import com.jsuereth.sbtpgp.PgpKeys
-import sbt.CrossVersion
 import sbtrelease.ReleasePlugin.autoImport._
 import sbtrelease.ReleaseStateTransformations._
-import sbt._, Keys._
 
-
-
-
-
-// Multiple Scala versions support
 
 val isDotty = Def.setting { CrossVersion.partialVersion(scalaVersion.value).exists(_._1 != 2) }
 
