@@ -12,13 +12,6 @@ import sbt._, Keys._
 
 val isDotty = Def.setting { CrossVersion.partialVersion(scalaVersion.value).exists(_._1 != 2) }
 
-val scala_2_12             = "2.12.13"
-val scala_2_13             = "2.13.4"
-val dotty                  = "3.0.0"
-val mainScalaVersion       = dotty
-val supportedScalaVersions = Seq(scala_2_12, scala_2_13, dotty)
-
-
 // Dependencies
 
 val catsVersion                  = "2.6.1"
@@ -34,14 +27,21 @@ libraryDependencies ++= Seq(
 libraryDependencies ++= (
   if(isDotty.value) Nil
   else
-    Seq(compilerPlugin("org.typelevel" %% "kind-projector" % "0.11.3" cross CrossVersion.full)))
+    Seq(compilerPlugin("org.typelevel" %% "kind-projector" % "0.13.1" cross CrossVersion.full)))
 
+// Multiple Scala versions support
+
+val scala_2_12             = "2.12.14"
+val scala_2_13             = "2.13.6"
+val dotty                  = "3.0.1"
+val mainScalaVersion       = scala_2_13
+val supportedScalaVersions = Seq(scala_2_12, scala_2_13, dotty)
 
 lazy val baseSettings = Seq(
 // Scala settings
   homepage := Some(url("https://github.com/theiterators/sealed-monad")),
   scalaVersion := mainScalaVersion,
-  scalacOptions := Seq("-deprecation", "-unchecked", "-feature", "-encoding", "utf8") ++ 
+  scalacOptions := Seq("-deprecation", "-unchecked", "-feature", "-encoding", "utf8") ++
   (if (isDotty.value)
    Seq("-language:implicitConversions", "-Ykind-projector", "-Xignore-scala2-macros")
     else Nil),

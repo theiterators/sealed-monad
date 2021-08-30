@@ -2,7 +2,7 @@ package pl.iterators.sealedmonad
 
 import cats._
 import Function.const
-
+import cats.syntax.bitraverse._
 import scala.language.higherKinds
 
 sealed trait Sealed[F[_], +A, +ADT] {
@@ -11,7 +11,26 @@ sealed trait Sealed[F[_], +A, +ADT] {
   def map[B](f: A => B): Sealed[F, B, ADT]                                    = Sealed.FlatMap(this, (a: A) => Sealed.Value(f(a)))
   def flatMap[B, ADT1 >: ADT](f: A => Sealed[F, B, ADT1]): Sealed[F, B, ADT1] = Sealed.FlatMap(this, f)
 
-  final def semiflatMap[B](f: A => F[B]): Sealed[F, B, ADT]                      = flatMap(a => Sealed.Effect(Eval.later(f(a))))
+  final def semiflatMap[B](f: A => F[B]): Sealed[F, B, ADT] = flatMap(a => Sealed.Effect(Eval.later(f(a))))
+
+  final def leftSemiflatMap[ADT1](f: ADT => F[ADT1])(implicit F: Applicative[F]): Sealed[F, A, ADT1] =
+    either
+      .semiflatMap(_.leftTraverse(f))
+      .asInstanceOf[Sealed[F, Either[ADT1, A], ADT1]]
+      .rethrow
+
+  final def leftSemiflatTap[C](f: ADT => F[C])(implicit F: Applicative[F]): Sealed[F, A, ADT] =
+    leftSemiflatMap(adt => F.as(f(adt), adt))
+
+  final def biSemiflatMap[B, ADT1](fa: ADT => F[ADT1], fb: A => F[B])(implicit F: Applicative[F]): Sealed[F, B, ADT1] =
+    either
+      .semiflatMap(_.bitraverse(fa, fb))
+      .asInstanceOf[Sealed[F, Either[ADT1, B], ADT1]]
+      .rethrow
+
+  final def biSemiflatTap[B, C](fa: ADT => F[C], fb: A => F[B])(implicit F: Applicative[F]): Sealed[F, A, ADT] =
+    biSemiflatMap[A, ADT](adt => F.as(fa(adt), adt), a => F.as(fb(a), a))
+
   final def complete[ADT1 >: ADT](f: A => ADT1): Sealed[F, Nothing, ADT1]        = flatMap(a => Sealed.Result(f(a)))
   final def completeWith[ADT1 >: ADT](f: A => F[ADT1]): Sealed[F, Nothing, ADT1] = flatMap(a => Sealed.ResultF(Eval.later(f(a))))
 
@@ -111,6 +130,10 @@ object Sealed extends SealedInstances {
     }
 
   def handleError[F[_], A, B, ADT](fa: F[Either[A, B]])(f: A => ADT): Sealed[F, B, ADT] = Sealed(fa).attempt(_.leftMap(f))
+
+  def bimap[F[_], A, B, C, ADT](fa: F[Either[A, B]])(f: A => ADT)(fb: B => C): Sealed[F, C, ADT] =
+    Sealed(fa).attempt(_.leftMap(f).map(fb))
+
 }
 
 private final class SealedMonad[F[_], ADT] extends StackSafeMonad[Sealed[F, *, ADT]] {
