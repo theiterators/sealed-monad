@@ -52,9 +52,9 @@ trait SealedLaws[F[_]] {
   def rethrowRightIdentity[A, B](s: Sealed[F, A, B]) = s.map(Right(_)).rethrow <-> s
   def rethrowLeftIdentity[A](s: Sealed[F, A, A])     = s.map(Left(_): Either[A, A]).rethrow <-> s.complete(identity)
 
-  def attemptRightIdentity[A, B, C](s: Sealed[F, A, C], f: A => B)               = s.attempt(a => Right(f(a))) <-> s.map(f)
-  def attemptLeftIdentity[A, B](s: Sealed[F, A, B], f: A => B)                   = s.attempt(a => Left(f(a)): Either[B, B]) <-> s.complete(f)
-  def attemptFCoherence[A, B, C](s: Sealed[F, A, C], f: A => Either[C, B])       = s.attemptF(a => M.pure(f(a))) <-> s.attempt(f)
+  def attemptRightIdentity[A, B, C](s: Sealed[F, A, C], f: A => B)         = s.attempt(a => Right(f(a))) <-> s.map(f)
+  def attemptLeftIdentity[A, B](s: Sealed[F, A, B], f: A => B)             = s.attempt(a => Left(f(a)): Either[B, B]) <-> s.complete(f)
+  def attemptFCoherence[A, B, C](s: Sealed[F, A, C], f: A => Either[C, B]) = s.attemptF(a => M.pure(f(a))) <-> s.attempt(f)
   def attemptRethrowCoherence[A, B, C](s: Sealed[F, A, C], f: A => Either[C, B]) = s.attempt(f) <-> s.map(f).rethrow
 
   def eitherIdentity[A, B](s: Sealed[F, A, B]) = s.either.rethrow <-> s

@@ -1,6 +1,7 @@
 package pl.iterators.sealedmonad
 
 class SealedMonadSpecs extends SealedSuite {
+
   import SealedTestInstances.ADT
   import cats.laws.discipline.MonadTests
 

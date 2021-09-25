@@ -29,6 +29,7 @@ object SealedPrograms {
 @Measurement(iterations = 20, time = 1, timeUnit = TimeUnit.SECONDS)
 @Fork(1)
 class SealedPrograms {
+
   import SealedPrograms._
   import pl.iterators.sealedmonad.syntax._
 
@@ -77,9 +78,8 @@ class SealedPrograms {
       s <- EitherT.fromOptionF(doSomeOtherWork(m), ifNone = SomeOtherCase: ADT)
     } yield (m, s)
 
-    userT.semiflatMap {
-      case (m, s) =>
-        M.pure(m + s.toInt).map(_ => Result(m))
+    userT.semiflatMap { case (m, s) =>
+      M.pure(m + s.toInt).map(_ => Result(m))
     }.merge
   }
 

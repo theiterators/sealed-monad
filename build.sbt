@@ -9,8 +9,8 @@ val castsTestkitScalatestVersion = "2.1.5"
 
 libraryDependencies ++= Seq(
   "org.typelevel" %% "cats-core"              % catsVersion,
-  "org.typelevel" %% "cats-laws"              % catsVersion % Test,
-  "org.typelevel" %% "cats-testkit"           % catsVersion % Test,
+  "org.typelevel" %% "cats-laws"              % catsVersion                  % Test,
+  "org.typelevel" %% "cats-testkit"           % catsVersion                  % Test,
   "org.typelevel" %% "cats-testkit-scalatest" % castsTestkitScalatestVersion % Test
 )
 
@@ -25,23 +25,26 @@ val supportedScalaVersions = Seq(scala_2_12, scala_2_13)
 
 lazy val baseSettings = Seq(
 // Scala settings
-  homepage := Some(url("https://github.com/theiterators/sealed-monad")),
-  scalaVersion := mainScalaVersion,
-  scalacOptions := Seq("-deprecation", "-unchecked", "-feature", "-encoding", "utf8"),
+  homepage          := Some(url("https://github.com/theiterators/sealed-monad")),
+  scalaVersion      := mainScalaVersion,
+  scalacOptions     := Seq("-deprecation", "-unchecked", "-feature", "-encoding", "utf8"),
   scalafmtOnCompile := true,
 // Sonatype settings
-  publishTo := sonatypePublishTo.value,
-  sonatypeProfileName := "pl.iterators",
-  publishMavenStyle := true,
-  licenses := Seq("Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0")),
-  organization := "pl.iterators",
-  organizationName := "Iterators",
+  publishTo            := sonatypePublishTo.value,
+  sonatypeProfileName  := "pl.iterators",
+  publishMavenStyle    := true,
+  licenses             := Seq("Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0")),
+  organization         := "pl.iterators",
+  organizationName     := "Iterators",
   organizationHomepage := Some(url("https://iterato.rs")),
   developers := List(
-    Developer(id = "mrzeznicki",
+    Developer(
+      id = "mrzeznicki",
       name = "Marcin Rzeźnicki",
       email = "mrzeznicki@iterato.rs",
-      url = url("https://github.com/marcin-rzeznicki"))),
+      url = url("https://github.com/marcin-rzeznicki")
+    )
+  ),
   scmInfo := Some(
     ScmInfo(
       browseUrl = url("https://github.com/theiterators/sealed-monad"),
@@ -50,15 +53,15 @@ lazy val baseSettings = Seq(
   ),
   credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
   releasePublishArtifactsAction := PgpKeys.publishSigned.value,
-  crossScalaVersions := supportedScalaVersions,
-  releaseCrossBuild := true
+  crossScalaVersions            := supportedScalaVersions,
+  releaseCrossBuild             := true
 )
 
 lazy val noPublishSettings =
   Seq(
-    publishArtifact := false,
+    publishArtifact   := false,
     releaseCrossBuild := false,
-    skip in publish := true,
+    skip in publish   := true,
     releasePublishArtifactsAction := {
       val projectName = name.value
       streams.value.log.warn(s"Publishing for $projectName is turned off")
@@ -71,9 +74,9 @@ lazy val examples = project
   .settings(baseSettings: _*)
   .settings(noPublishSettings: _*)
   .settings(
-    name := "examples",
+    name        := "examples",
     description := "Sealed monad - snippets of example code",
-    moduleName := "sealed-examples"
+    moduleName  := "sealed-examples"
   )
 
 lazy val benchmarks = project
@@ -83,9 +86,9 @@ lazy val benchmarks = project
   .settings(baseSettings: _*)
   .settings(noPublishSettings: _*)
   .settings(
-    name := "benchmarks",
+    name        := "benchmarks",
     description := "Sealed monad benchmarks",
-    moduleName := "sealed-benchmarks"
+    moduleName  := "sealed-benchmarks"
   )
 
 addCommandAlias("flame", "benchmarks/jmh:run -p tokens=64 -prof jmh.extras.Async:dir=target/flamegraphs;flameGraphOpts=--width,1900")
@@ -94,7 +97,7 @@ lazy val sealedMonad = project
   .in(file("."))
   .settings(baseSettings: _*)
   .settings(
-    name := "sealed-monad",
+    name        := "sealed-monad",
     description := "Library to eliminate the boilerplate code",
     releaseProcess := Seq(
       checkSnapshotDependencies,
