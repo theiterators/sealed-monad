@@ -61,7 +61,7 @@ lazy val noPublishSettings =
   Seq(
     publishArtifact   := false,
     releaseCrossBuild := false,
-    skip in publish   := true,
+    skip / publish   := true,
     releasePublishArtifactsAction := {
       val projectName = name.value
       streams.value.log.warn(s"Publishing for $projectName is turned off")
@@ -79,6 +79,18 @@ lazy val examples = project
     moduleName  := "sealed-examples"
   )
 
+lazy val docs = project
+  .in(file("docs"))
+  .dependsOn(sealedMonad % "test->test;compile->compile")
+  .enablePlugins(MdocPlugin)
+  .settings(baseSettings: _*)
+  .settings(noPublishSettings: _*)
+  .settings(
+    name        := "docs",
+    description := "Sealed monad documentation",
+    moduleName  := "sealed-docs"
+  )
+  .enablePlugins(DocusaurusPlugin)
 lazy val benchmarks = project
   .in(file("benchmarks"))
   .dependsOn(sealedMonad % "test->test;compile->compile")
@@ -98,7 +110,7 @@ lazy val sealedMonad = project
   .settings(baseSettings: _*)
   .settings(
     name        := "sealed-monad",
-    description := "Library to eliminate the boilerplate code",
+    description := "Scala library for nice for-comprehension-style error handling",
     releaseProcess := Seq(
       checkSnapshotDependencies,
       inquireVersions,
