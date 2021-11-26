@@ -80,17 +80,17 @@ lazy val examples = project
   )
 
 lazy val docs = project
-  .in(file("docs"))
+  .in(file("sealed-docs"))
   .dependsOn(sealedMonad % "test->test;compile->compile")
-  .enablePlugins(MdocPlugin)
+  .enablePlugins(MdocPlugin, DocusaurusPlugin)
   .settings(baseSettings: _*)
   .settings(noPublishSettings: _*)
   .settings(
     name        := "docs",
     description := "Sealed monad documentation",
-    moduleName  := "sealed-docs"
+    moduleName  := "sealed-docs",
+    mdocIn := (LocalRootProject / baseDirectory).value / "sealed-docs" / "src" / "main" / "mdoc",
   )
-  .enablePlugins(DocusaurusPlugin)
 lazy val benchmarks = project
   .in(file("benchmarks"))
   .dependsOn(sealedMonad % "test->test;compile->compile")
