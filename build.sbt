@@ -88,9 +88,14 @@ lazy val docs = project
   .settings(
     name        := "docs",
     description := "Sealed monad documentation",
-    moduleName  := "sealed-docs",
-    mdocIn := (LocalRootProject / baseDirectory).value / "sealed-docs" / "src" / "main" / "mdoc",
+    moduleName  := "sealed-docs"
   )
+  .settings(
+   mdocVariables := Map(
+     "VERSION" -> version.value
+   )
+  )
+  
 lazy val benchmarks = project
   .in(file("benchmarks"))
   .dependsOn(sealedMonad % "test->test;compile->compile")
