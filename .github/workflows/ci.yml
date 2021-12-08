@@ -42,3 +42,5 @@ jobs:
 
       - name: Build project
         run: sbt ++${{ matrix.scala }} test
+      - name: Build documentation
+        run: sbt ++${{ matrix.scala }} docs/mdoc
