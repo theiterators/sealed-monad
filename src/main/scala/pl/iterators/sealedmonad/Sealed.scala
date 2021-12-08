@@ -116,8 +116,18 @@ object Sealed extends SealedInstances {
 
   import cats.syntax.either._
 
-  def liftF[F[_], A](value: A): Sealed[F, A, Nothing]              = Value(value)
-  def apply[F[_], A](value: => F[A]): Sealed[F, A, Nothing]        = Effect(Eval.later(value))
+  def liftF[F[_], A](value: A): Sealed[F, A, Nothing]       = Value(value)
+  def apply[F[_], A](value: => F[A]): Sealed[F, A, Nothing] = Effect(Eval.later(value))
+
+  /** Creates a `Sealed[F, Nothing, A]` from a pure value `A`.
+    *
+    * Example:
+    * {{{
+    * scala> import pl.iterators.sealedmonad.syntax._
+    * scala> 1.seal
+    * res0: pl.iterators.sealedmonad.Sealed[Nothing,Nothing,Int] = Result(1)
+    * }}}
+    */
   def seal[F[_], A](value: A): Sealed[F, Nothing, A]               = Result(value)
   def result[F[_], ADT](value: => F[ADT]): Sealed[F, Nothing, ADT] = ResultF(Eval.later(value))
 
