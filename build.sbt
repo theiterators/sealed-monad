@@ -26,7 +26,7 @@ libraryDependencies ++= (
 
 val scala_2_12             = "2.12.15"
 val scala_2_13             = "2.13.7"
-val dotty                  = "3.0.1"
+val dotty                  = "3.1.0"
 val mainScalaVersion       = scala_2_13
 val supportedScalaVersions = Seq(scala_2_12, scala_2_13, dotty)
 
