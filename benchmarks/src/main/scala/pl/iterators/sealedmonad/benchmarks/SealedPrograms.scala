@@ -29,6 +29,7 @@ object SealedPrograms {
 @Measurement(iterations = 20, time = 1, timeUnit = TimeUnit.SECONDS)
 @Fork(1)
 class SealedPrograms {
+
   import SealedPrograms._
   import pl.iterators.sealedmonad.syntax._
 
