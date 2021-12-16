@@ -2,7 +2,6 @@ package pl.iterators.sealedmonad.side_effects
 
 import cats.Id
 import pl.iterators.sealedmonad.syntax._
-import cats.catsInstancesForId
 
 trait SealedSideEffectsInspect {
 
@@ -16,11 +15,13 @@ trait SealedSideEffectsInspect {
     def invokeOther() =
       invokedOther = true
 
-    0.seal.inspect {
-      case Left(10) => invokeOther()
-      case Left(20) => invokeOther()
-      case Left(0)  => invoke()
-    }.run
+    0.seal[Id]
+      .inspect {
+        case Left(10) => invokeOther()
+        case Left(20) => invokeOther()
+        case Left(0)  => invoke()
+      }
+      .run
 
     invoked && !invokedOther
   }
@@ -34,11 +35,13 @@ trait SealedSideEffectsInspect {
 
     def invokeOther() =
       invokedOther = true
-    30.seal.inspect {
-      case Left(10) => invokeOther()
-      case Left(20) => invokeOther()
-      case Left(0)  => invoke()
-    }.run
+    30.seal[Id]
+      .inspect {
+        case Left(10) => invokeOther()
+        case Left(20) => invokeOther()
+        case Left(0)  => invoke()
+      }
+      .run
 
     !invoked && !invokedOther
   }
@@ -146,7 +149,7 @@ trait SealedSideEffectsInspect {
     def invokeOther() =
       invokedOther = true
 
-    0.liftSealed
+    0.liftSealed[Id, Nothing]
       .ensure(_ => true, 30)
       .inspect {
         case Left(10) => invokeOther()
@@ -168,7 +171,7 @@ trait SealedSideEffectsInspect {
     def invokeOther() =
       invokedOther = true
 
-    0.liftSealed
+    0.liftSealed[Id, Nothing]
       .ensure(_ => true, 30)
       .inspect {
         case Left(10) => invokeOther()
@@ -190,7 +193,7 @@ trait SealedSideEffectsInspect {
     def invokeOther() =
       invokedOther = true
 
-    10.liftSealed
+    10.liftSealed[Id, Nothing]
       .ensure(_ => false, 40)
       .inspect {
         case Left(10) => invokeOther()
@@ -213,7 +216,7 @@ trait SealedSideEffectsInspect {
     def invokeOther() =
       invokedOther = true
 
-    0.liftSealed
+    0.liftSealed[Id, Nothing]
       .ensure(_ => false, 30)
       .inspect {
         case Left(10) => invokeOther()

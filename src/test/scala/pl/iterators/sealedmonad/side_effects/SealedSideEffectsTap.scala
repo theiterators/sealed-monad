@@ -2,17 +2,16 @@ package pl.iterators.sealedmonad.side_effects
 
 import cats.Id
 import pl.iterators.sealedmonad.syntax._
-import cats.catsInstancesForId
 
 trait SealedSideEffectsTap {
 
   def invokeTap: Boolean = {
     var shouldBeInvoked: Boolean = false
 
-    def invoke() =
+    def invoke(): Id[Unit] =
       shouldBeInvoked = true
 
-    0.liftSealed
+    0.liftSealed[Id, Nothing]
       .tap(_ => invoke())
       .run
 
@@ -141,7 +140,7 @@ trait SealedSideEffectsTap {
     def invoke() =
       shouldBeInvoked = true
 
-    0.liftSealed
+    0.liftSealed[Id, Nothing]
       .ensure(_ => true, 30)
       .tap(_ => invoke())
       .run
@@ -183,7 +182,7 @@ trait SealedSideEffectsTap {
     def invoke() =
       shouldBeInvoked = true
 
-    0.liftSealed
+    0.liftSealed[Id, Nothing]
       .ensure(_ => false, 30)
       .tap(_ => invoke())
       .run
