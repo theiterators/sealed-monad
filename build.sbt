@@ -2,6 +2,9 @@ import com.jsuereth.sbtpgp.PgpKeys
 import sbtrelease.ReleasePlugin.autoImport._
 import sbtrelease.ReleaseStateTransformations._
 
+
+val isDotty = Def.setting { CrossVersion.partialVersion(scalaVersion.value).exists(_._1 != 2) }
+
 // Dependencies
 
 val catsVersion                  = "2.7.0"
@@ -11,23 +14,30 @@ libraryDependencies ++= Seq(
   "org.typelevel" %% "cats-core"              % catsVersion,
   "org.typelevel" %% "cats-laws"              % catsVersion                  % Test,
   "org.typelevel" %% "cats-testkit"           % catsVersion                  % Test,
-  "org.typelevel" %% "cats-testkit-scalatest" % castsTestkitScalatestVersion % Test
+  "org.typelevel" %% "cats-testkit-scalatest" % castsTestkitScalatestVersion % Test,
 )
 
-addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.13.2" cross CrossVersion.full)
+libraryDependencies ++= (
+  if(isDotty.value) Nil
+  else
+    Seq(compilerPlugin("org.typelevel" %% "kind-projector" % "0.13.2" cross CrossVersion.full)))
 
 // Multiple Scala versions support
 
 val scala_2_12             = "2.12.15"
 val scala_2_13             = "2.13.7"
+val dotty                  = "3.1.0"
 val mainScalaVersion       = scala_2_13
-val supportedScalaVersions = Seq(scala_2_12, scala_2_13)
+val supportedScalaVersions = Seq(scala_2_12, scala_2_13, dotty)
 
 lazy val baseSettings = Seq(
 // Scala settings
   homepage          := Some(url("https://github.com/theiterators/sealed-monad")),
   scalaVersion      := mainScalaVersion,
-  scalacOptions     := Seq("-deprecation", "-unchecked", "-feature", "-encoding", "utf8"),
+  scalacOptions     := Seq("-deprecation", "-unchecked", "-feature", "-encoding", "utf8") ++
+  (if (isDotty.value)
+   Seq("-language:implicitConversions", "-Ykind-projector", "-Xignore-scala2-macros")
+    else Nil),
   scalafmtOnCompile := true,
 // Sonatype settings
   publishTo            := sonatypePublishTo.value,
@@ -95,7 +105,7 @@ lazy val docs = project
      "VERSION" -> version.value
    )
   )
-  
+
 lazy val benchmarks = project
   .in(file("benchmarks"))
   .dependsOn(sealedMonad % "test->test;compile->compile")
