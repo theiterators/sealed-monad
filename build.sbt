@@ -2,8 +2,7 @@ import com.jsuereth.sbtpgp.PgpKeys
 import sbtrelease.ReleasePlugin.autoImport._
 import sbtrelease.ReleaseStateTransformations._
 
-
-val isDotty = Def.setting { CrossVersion.partialVersion(scalaVersion.value).exists(_._1 != 2) }
+val isDotty = Def.setting(CrossVersion.partialVersion(scalaVersion.value).exists(_._1 != 2))
 
 // Dependencies
 
@@ -14,13 +13,12 @@ libraryDependencies ++= Seq(
   "org.typelevel" %% "cats-core"              % catsVersion,
   "org.typelevel" %% "cats-laws"              % catsVersion                  % Test,
   "org.typelevel" %% "cats-testkit"           % catsVersion                  % Test,
-  "org.typelevel" %% "cats-testkit-scalatest" % castsTestkitScalatestVersion % Test,
+  "org.typelevel" %% "cats-testkit-scalatest" % castsTestkitScalatestVersion % Test
 )
 
-libraryDependencies ++= (
-  if(isDotty.value) Nil
-  else
-    Seq(compilerPlugin("org.typelevel" %% "kind-projector" % "0.13.2" cross CrossVersion.full)))
+libraryDependencies ++= (if (isDotty.value) Nil
+                         else
+                           Seq(compilerPlugin("org.typelevel" %% "kind-projector" % "0.13.2" cross CrossVersion.full)))
 
 // Multiple Scala versions support
 
@@ -32,12 +30,12 @@ val supportedScalaVersions = Seq(scala_2_12, scala_2_13, dotty)
 
 lazy val baseSettings = Seq(
 // Scala settings
-  homepage          := Some(url("https://github.com/theiterators/sealed-monad")),
-  scalaVersion      := mainScalaVersion,
-  scalacOptions     := Seq("-deprecation", "-unchecked", "-feature", "-encoding", "utf8") ++
-  (if (isDotty.value)
-   Seq("-language:implicitConversions", "-Ykind-projector", "-Xignore-scala2-macros")
-    else Nil),
+  homepage     := Some(url("https://github.com/theiterators/sealed-monad")),
+  scalaVersion := mainScalaVersion,
+  scalacOptions := Seq("-deprecation", "-unchecked", "-feature", "-encoding", "utf8") ++
+    (if (isDotty.value)
+       Seq("-language:implicitConversions", "-Ykind-projector", "-Xignore-scala2-macros")
+     else Nil),
   scalafmtOnCompile := true,
 // Sonatype settings
   publishTo            := sonatypePublishTo.value,
@@ -71,7 +69,7 @@ lazy val noPublishSettings =
   Seq(
     publishArtifact   := false,
     releaseCrossBuild := false,
-    skip / publish   := true,
+    skip / publish    := true,
     releasePublishArtifactsAction := {
       val projectName = name.value
       streams.value.log.warn(s"Publishing for $projectName is turned off")
@@ -101,9 +99,9 @@ lazy val docs = project
     moduleName  := "sealed-docs"
   )
   .settings(
-   mdocVariables := Map(
-     "VERSION" -> version.value
-   )
+    mdocVariables := Map(
+      "VERSION" -> version.value
+    )
   )
 
 lazy val benchmarks = project
