@@ -24,7 +24,7 @@ final class SealedFAOps[F[_], A](private val self: F[A]) extends AnyVal {
 
 final class SealedFOptAOps[F[_], A](private val self: F[Option[A]]) extends AnyVal {
 
-  /** Returns a Sealed instance containing value `A` if it's present, else short-circuits with specified `ADT` argument.
+  /** Returns a Sealed instance containing value `A` if it's present, else short-circuits with given `ADT` value.
     *
     * Example:
     * {{{
@@ -43,7 +43,7 @@ final class SealedFOptAOps[F[_], A](private val self: F[Option[A]]) extends AnyV
     */
   def valueOr[ADT](orElse: => ADT): Sealed[F, A, ADT] = Sealed.valueOr(self, orElse)
 
-  /** Returns a Sealed instance containing value `A` if it's present, else short-circuits with specified `ADT` argument.
+  /** Returns a Sealed instance containing value `A` if it's present, else short-circuits with given effectful `ADT` value.
     *
     * Example:
     * {{{
