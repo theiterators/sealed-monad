@@ -36,7 +36,7 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * scala> val sealedNone: Sealed[Id, Int, Response] = Id(Option.empty).valueOr(NotFound)
     * scala> (for { x <- sealedNone.leftSemiflatTap(_ => Id(println("left"))) } yield Value(x)).run
     * val res1: cats.Id[Response] = NotFound
-    * // prints left
+    * // prints 'left'
     * }}}
     */
   final def leftSemiflatTap[C](f: ADT => F[C])(implicit F: Applicative[F]): Sealed[F, A, ADT] =
@@ -48,6 +48,27 @@ sealed trait Sealed[F[_], +A, +ADT] {
       .asInstanceOf[Sealed[F, Either[ADT1, B], ADT1]]
       .rethrow
 
+  /** Executes appropriate side effect depending on whether `A` or `ADT` has been reached, and returns unchanged `Sealed[F, A, ADT]`.
+    *
+    * Example:
+    * {{{
+    * scala> import pl.iterators.sealedmonad.Sealed
+    * scala> import pl.iterators.sealedmonad.syntax._
+    * scala> import cats.Id
+    * scala> sealed trait Response
+    * scala> case class Value(i: Int) extends Response
+    * scala> case object NotFound extends Response
+    * scala> case object Transformed extends Response
+    * scala> val sealedSome: Sealed[Id, Int, Response] = Id(Option(1)).valueOr(NotFound)
+    * scala> (for { x <- sealedSome.biSemiflatTap(_ => Id(println("left")), _ => Id(println("right"))) } yield Value(x)).run
+    * // prints 'right'
+    * val res0: cats.Id[Response] = Value(1)
+    * scala> val sealedNone: Sealed[Id, Int, Response] = Id(Option.empty).valueOr(NotFound)
+    * scala> (for { x <- sealedNone.biSemiflatTap(_ => Id(println("left")), _ => Id(println("right"))) } yield Value(x)).run
+    * val res1: cats.Id[Response] = NotFound
+    * // prints 'left'
+    * }}}
+    */
   final def biSemiflatTap[B, C](fa: ADT => F[C], fb: A => F[B])(implicit F: Applicative[F]): Sealed[F, A, ADT] =
     biSemiflatMap[A, ADT](adt => F.as(fa(adt), adt), a => F.as(fb(a), a))
 
