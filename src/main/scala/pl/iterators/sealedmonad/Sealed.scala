@@ -21,7 +21,6 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * scala> sealed trait Response
     * scala> case class Value(i: Int) extends Response
     * scala> case object NotFound extends Response
-    * scala> case object Transformed extends Response
     * scala> val sealedSome: Sealed[Id, Int, Response] = Id(Option(1)).valueOr(NotFound)
     * scala> (for { x <- sealedSome.semiflatMap(_ => Id(42)) } yield Value(x)).run
     * val res0: cats.Id[Response] = Value(42)
@@ -45,7 +44,6 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * scala> sealed trait Response
     * scala> case class Value(i: Int) extends Response
     * scala> case object NotFound extends Response
-    * scala> case object Transformed extends Response
     * scala> val sealedSome: Sealed[Id, Int, Response] = Id(Option(1)).valueOr(NotFound)
     * scala> (for { x <- sealedSome.leftSemiflatTap(_ => Id(println("left"))) } yield Value(x)).run
     * val res0: cats.Id[Response] = Value(1)
@@ -74,7 +72,6 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * scala> sealed trait Response
     * scala> case class Value(i: Int) extends Response
     * scala> case object NotFound extends Response
-    * scala> case class Transformed(i: Int) extends Response
     * scala> val sealedSome: Sealed[Id, Int, Response] = Id(Option(1)).valueOr(NotFound)
     * scala> (for { x <- sealedSome.biSemiflatTap(_ => Id(println("left")), _ => Id(println("right"))) } yield Value(x)).run
     * // prints 'right'
@@ -88,7 +85,8 @@ sealed trait Sealed[F[_], +A, +ADT] {
   final def biSemiflatTap[B, C](fa: ADT => F[C], fb: A => F[B])(implicit F: Applicative[F]): Sealed[F, A, ADT] =
     biSemiflatMap[A, ADT](adt => F.as(fa(adt), adt), a => F.as(fb(a), a))
 
-  /** Finishes the computation returning Sealed with given ADT.
+
+  /** Finishes the computation by returning Sealed with given ADT.
     *
     * Example:
     * {{{
@@ -141,7 +139,48 @@ sealed trait Sealed[F[_], +A, +ADT] {
   final def ensure[ADT1 >: ADT](pred: A => Boolean, orElse: => ADT1): Sealed[F, A, ADT1]    = ensureOr(pred, _ => orElse)
   final def ensureNot[ADT1 >: ADT](pred: A => Boolean, orElse: => ADT1): Sealed[F, A, ADT1] = ensure(a => !pred(a), orElse)
 
+  /** Executes a side effect on value `A` if present, and returns unchanged `Sealed[F, A, ADT]`.
+    *
+    * Example:
+    * {{{
+    * scala> import pl.iterators.sealedmonad.Sealed
+    * scala> import pl.iterators.sealedmonad.syntax._
+    * scala> import cats.Id
+    * scala> sealed trait Response
+    * scala> case class Value(i: Int) extends Response
+    * scala> case object NotFound extends Response
+    * scala> val sealedSome: Sealed[Id, Int, Response] = Id(Option(1)).valueOr(NotFound)
+    * scala> (for { x <- sealedSome.tap(_ => println("right")) } yield Value(x)).run
+    * val res0: cats.Id[Response] = Value(1)
+    * // prints 'right'
+    * scala> val sealedNone: Sealed[Id, Int, Response] = Id(Option.empty).valueOr(NotFound)
+    * scala> (for { x <- sealedNone.flatTap(_ => println("left")) } yield Value(x)).run
+    * val res1: cats.Id[Response] = NotFound
+    * // doesn't print anything
+    * }}}
+    */
   final def tap[B](f: A => B): Sealed[F, A, ADT]        = flatMap(a => map(f andThen const(a)))
+
+  /** Effectful version of `tap`. Executes a side effect on value `A` if present, and returns unchanged `Sealed[F, A, ADT]`.
+    *
+    * Example:
+    * {{{
+    * scala> import pl.iterators.sealedmonad.Sealed
+    * scala> import pl.iterators.sealedmonad.syntax._
+    * scala> import cats.Id
+    * scala> sealed trait Response
+    * scala> case class Value(i: Int) extends Response
+    * scala> case object NotFound extends Response
+    * scala> val sealedSome: Sealed[Id, Int, Response] = Id(Option(1)).valueOr(NotFound)
+    * scala> (for { x <- sealedSome.flatTap(_ => Id(println("right"))) } yield Value(x)).run
+    * val res0: cats.Id[Response] = Value(1)
+    * // prints 'right'
+    * scala> val sealedNone: Sealed[Id, Int, Response] = Id(Option.empty).valueOr(NotFound)
+    * scala> (for { x <- sealedNone.flatTap(_ => Id(println("left"))) } yield Value(x)).run
+    * val res1: cats.Id[Response] = NotFound
+    * // doesn't print anything
+    * }}}
+    */
   final def flatTap[B](f: A => F[B]): Sealed[F, A, ADT] = flatMap(a => semiflatMap(f).map(_ => a))
 
   final def flatTapWhen[B](cond: A => Boolean, f: A => F[B]): Sealed[F, A, ADT] =
