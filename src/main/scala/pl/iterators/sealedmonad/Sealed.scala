@@ -120,20 +120,127 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * }}}
     */
   final def completeWith[ADT1 >: ADT](f: A => F[ADT1]): Sealed[F, Nothing, ADT1] = flatMap(a => Sealed.ResultF(Eval.later(f(a))))
-
+  
+  /** Converts `Sealed[F, Either[ADT1, B], ADT]` into `Sealed[F, B, ADT1]`. Usually paired with `either`. See `Sealed#either` for example usage.
+   * 
+   */
   final def rethrow[B, ADT1 >: ADT](implicit ev: A <:< Either[ADT1, B]): Sealed[F, B, ADT1] =
     flatMap(a => ev(a).fold(Sealed.Result(_), Sealed.Value(_)))
+
+  /** Converts `A` into `Either[ADT1, B]` and creates a Sealed instance from the result.
+    * 
+    * Example:
+    * {{{
+    * scala> import pl.iterators.sealedmonad.Sealed
+    * scala> import pl.iterators.sealedmonad.syntax._
+    * scala> import cats.Id
+    * scala> sealed trait Response
+    * scala> case class Value(i: Int) extends Response
+    * scala> case object NotFound extends Response
+    * scala> case class UnwantedNumber(i: Int) extends Response
+    * scala> val sealedSome: Sealed[Id, Int, Response] = Id(Option(1)).valueOr(NotFound)
+    * scala> (for { x <- sealedSome.attempt(num => Either.cond(num == 1, Value(num), UnwantedNumber(num))) } yield x).run
+    * val res0: cats.Id[Response] = Value(1)
+    * scala> (for { x <- sealedSome.map(_ => 2).attempt(num => Either.cond(num == 1, Value(num), UnwantedNumber(num))) } yield x).run
+    * val res1: cats.Id[Response] = UnwantedNumber(2)
+    * scala> val sealedNone: Sealed[Id, Int, Response] = Id(Option.empty).valueOr(NotFound)
+    * scala> (for { x <- sealedNone.attempt(num => Either.cond(num == 1, Value(num), UnwantedNumber(num))) } yield x).run
+    * val res2: cats.Id[Response] = NotFound
+    * }}}
+    */
   final def attempt[B, ADT1 >: ADT](f: A => Either[ADT1, B]): Sealed[F, B, ADT1]     = map(f).rethrow
+
+  /** Effectful version of `attempt`.
+    *
+    * Example:
+    * {{{
+    * scala> import pl.iterators.sealedmonad.Sealed
+    * scala> import pl.iterators.sealedmonad.syntax._
+    * scala> import cats.Id
+    * scala> sealed trait Response
+    * scala> case class Value(i: Int) extends Response
+    * scala> case object NotFound extends Response
+    * scala> case class UnwantedNumber(i: Int) extends Response
+    * scala> val sealedSome: Sealed[Id, Int, Response] = Id(Option(1)).valueOr(NotFound)
+    * scala> (for { x <- sealedSome.attemptF(num => Id(Either.cond(num == 1, Value(num), UnwantedNumber(num)))) } yield x).run
+    * val res0: cats.Id[Response] = Value(1)
+    * scala> (for { x <- sealedSome.map(_ => 2).attemptF(num => Id(Either.cond(num == 1, Value(num), UnwantedNumber(num)))) } yield x).run
+    * val res1: cats.Id[Response] = UnwantedNumber(2)
+    * scala> val sealedNone: Sealed[Id, Int, Response] = Id(Option.empty).valueOr(NotFound)
+    * scala> (for { x <- sealedNone.attemptF(num => Id(Either.cond(num == 1, Value(num), UnwantedNumber(num)))) } yield x).run
+    * val res2: cats.Id[Response] = NotFound
+    * }}} 
+    */
   final def attemptF[B, ADT1 >: ADT](f: A => F[Either[ADT1, B]]): Sealed[F, B, ADT1] = semiflatMap(f).rethrow
 
+  /** Applies `left` if this Sealed already reached `ADT`, or `right` if `A` is present.
+    *
+    * Example:
+    * {{{
+    * scala> import pl.iterators.sealedmonad.Sealed
+    * scala> import pl.iterators.sealedmonad.syntax._
+    * scala> import cats.Id
+    * scala> sealed trait Response
+    * scala> case class Value(i: Int) extends Response
+    * scala> case object NotFound extends Response
+    * scala> case object Reached extends Response
+    * scala> val sealedSome: Sealed[Id, Int, Response] = Id(Option(1)).valueOr(NotFound)
+    * scala> (for { x <- sealedSome.foldM((adt: Response) => Reached.seal, num => Value(num).seal ) } yield x).run
+    * val res0: cats.Id[Response] = Value(1)
+    * scala> val sealedNone: Sealed[Id, Int, Response] = Id(Option.empty).valueOr(NotFound)
+    * scala> (for { x <- sealedNone.foldM((adt: Response) => Reached.seal, num => Value(num).seal ) } yield x).run
+    * val res1: cats.Id[Response] = Reached
+    */
   final def foldM[B, ADT1 >: ADT](left: ADT1 => Sealed[F, B, ADT1], right: A => Sealed[F, B, ADT1]): Sealed[F, B, ADT1] =
     Sealed.Fold(this, left, right)
+
+  /** Converts `A` into `Either[ADT, A]`. Usually paired with `rethrow`.
+    *
+    * Example:
+    * {{{
+    * scala> import pl.iterators.sealedmonad.Sealed
+    * scala> import pl.iterators.sealedmonad.syntax._
+    * scala> import cats.Id
+    * scala> sealed trait Response
+    * scala> case class Value(i: Int) extends Response
+    * scala> case object NotFound extends Response
+    * scala> case class Transformed(i: Int) extends Response
+    * scala> val sealedSome: Sealed[Id, Int, Response] = Id(Option(1)).valueOr(NotFound)
+    * scala> (for { x <- sealedSome.either.map(_.fold(adt => Left(Transformed(2)), number => Right(42))).rethrow } yield Value(x)).run
+    * val res0: cats.Id[Response] = Value(42)
+    * scala> val sealedNone: Sealed[Id, Int, Response] = Id(Option.empty).valueOr(NotFound)
+    * scala> (for { x <- sealedNone.either.map(_.fold(adt => Left(Transformed(2)), number => Right(42))).rethrow } yield Value(x)).run
+    * val res1: cats.Id[Response] = Transformed(2)
+    * }}}
+    */
   final def either: Sealed[F, Either[ADT, A], ADT] = foldM((adt: ADT) => Sealed.Value(Left(adt)), a => Sealed.Value(Right(a)))
 
+  /** Executes a fire-and-forget side effect and returns unchanged `Sealed[F, A, ADT]`. Works irrespectively of Sealed's current state, in
+    * contrary to `tap`.
+    *
+    * Example:
+    * {{{
+    * scala> import pl.iterators.sealedmonad.Sealed
+    * scala> import pl.iterators.sealedmonad.syntax._
+    * scala> import cats.Id
+    * scala> sealed trait Response
+    * scala> case class Value(i: Int) extends Response
+    * scala> case object NotFound extends Response
+    * scala> val sealedSome: Sealed[Id, Int, Response] = Id(Option(1)).valueOr(NotFound)
+    * scala> (for { x <- sealedSome.inspect(either => either.fold(adt => println(adt), number => println(number))) } yield Value(x)).run
+    * val res0: cats.Id[Response] = Value(1)
+    * // prints '1'
+    * scala> val sealedNone: Sealed[Id, Int, Response] = Id(Option.empty).valueOr(NotFound)
+    * scala> (for { x <- sealedNone.inspect(either => either.fold(adt => println(adt), number => println(number))) } yield Value(x)).run
+    * val res1: cats.Id[Response] = NotFound
+    * // prints 'NotFound'
+    * }}}
+    */
   final def inspect(pf: PartialFunction[Either[ADT, A], Any]): Sealed[F, A, ADT] =
     either.map(e => pf.andThen(const(e)(_)).applyOrElse(e, const(e))).rethrow
 
-  /** Variation of `ensure` that allows you to access `A` in `orElse` parameter. Returns unchanged Sealed instance if condition is met, otherwise ends execution with specified `ADT`.
+  /** Variation of `ensure` that allows you to access `A` in `orElse` parameter. Returns unchanged Sealed instance if condition is met,
+    * otherwise ends execution with specified `ADT`.
     *
     * Example:
     * {{{
@@ -168,7 +275,7 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * val res0: cats.Id[Response] = Value(1)
     * }}}
     */
-  final def ensure[ADT1 >: ADT](pred: A => Boolean, orElse: => ADT1): Sealed[F, A, ADT1]    = ensureOr(pred, _ => orElse)
+  final def ensure[ADT1 >: ADT](pred: A => Boolean, orElse: => ADT1): Sealed[F, A, ADT1] = ensureOr(pred, _ => orElse)
 
   /** Returns unchanged Sealed instance if condition is not met, otherwise ends execution with specified `ADT`.
     *
