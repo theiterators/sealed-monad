@@ -10,7 +10,7 @@
 
 ### Documentation
 
-Please refer to the [docs](https://github.com/theiterators/sealed-monad/tree/master/docs) folder.
+Please refer to the [docs](https://sealed-monad.iteratorshq.com) site.
 
 ### Installation
 
