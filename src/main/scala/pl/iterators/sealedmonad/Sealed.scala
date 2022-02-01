@@ -216,7 +216,7 @@ sealed trait Sealed[F[_], +A, +ADT] {
   final def either: Sealed[F, Either[ADT, A], ADT] = foldM((adt: ADT) => Sealed.Value(Left(adt)), a => Sealed.Value(Right(a)))
 
   /** Executes a fire-and-forget side effect and returns unchanged `Sealed[F, A, ADT]`. Works irrespectively of Sealed's current state, in
-    * contrary to `tap`.
+    * contrary to `tap`. Useful for logging purposes.
     *
     * Example:
     * {{{
