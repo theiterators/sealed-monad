@@ -376,7 +376,7 @@ object Sealed extends SealedInstances {
         case Value(a)         => F.pure(Left(cont(a)))
         case Effect(fa)       => F.fmap(fa.value)(a0 => Left(cont(a0)))
         case FlatMap(prev, g) => F.pure(Left(prev.flatMap(runCont(g))))
-        case Fold(prev, l, r) => F.pure(Left(Fold(prev, runCont(l), runCont(r))))
+        case Fold(prev, l, r) => F.pure(Left(Fold(prev, runCont(l.asInstanceOf[ADT => Sealed[F, A0, ADT]]), runCont(r))))
         case _                => sys.error("impossible")
       }
   }
@@ -408,14 +408,14 @@ object Sealed extends SealedInstances {
   ) extends Sealed[F, A, ADT] {
     def runFold[B](f: B => Sealed[F, A0, ADT]) = f andThen (_.foldM(left, right))
 
-    override def step[A1 >: A, ADT1 >: ADT](implicit F: Applicative[F]) =
+    override def step[A1 >: A, ADT1 >: ADT](implicit F: Applicative[F]): F[Either[Sealed[F, A1, ADT1], Either[ADT1, A1]]] =
       value match {
         case Result(adt)      => F.pure(Left(left(adt)))
         case ResultF(fadt)    => F.fmap(fadt.value)(adt => Left(left(adt)))
         case Value(a)         => F.pure(Left(right(a)))
         case Effect(fa)       => F.fmap(fa.value)(a0 => Left(right(a0)))
         case FlatMap(prev, f) => F.pure(Left(prev.flatMap(runFold(f))))
-        case Fold(v0, l0, r0) => F.pure(Left(Fold(v0, runFold(l0), runFold(r0))))
+        case Fold(v0, l0, r0) => F.pure(Left(Fold(v0, runFold(l0.asInstanceOf[ADT => Sealed[F, A0, ADT]]), runFold(r0))))
       }
   }
 

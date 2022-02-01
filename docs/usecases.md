@@ -7,7 +7,7 @@
   import cats.Monad
   import cats.data.OptionT
   implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
-  implicit val M = implicitly[Monad[Future]]
+  implicit val M: Monad[Future] = implicitly[Monad[Future]]
 
   sealed trait Provider
 
