@@ -15,7 +15,7 @@ const projectGitHubUrl = 'https://github.com/theiterators/sealed-monad';
 const config = {
   title: projectTitle,
   tagline: 'Scala library for business logic oriented, for-comprehension-style error handling',
-  url: 'https://sealed-monad.iteratorshq.com',
+  url: 'https://theiterators.github.io/sealed-monad/',
   baseUrl: '/sealed-monad/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
