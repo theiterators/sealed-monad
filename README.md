@@ -10,4 +10,4 @@
 
 ### Documentation
 
-Please refer to the [docs](https://sealed-monad.iteratorshq.com) site.
+Please refer to the [docs](https://theiterators.github.io/sealed-monad) site.
