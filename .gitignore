@@ -26,6 +26,7 @@ lib_managed/
 src_managed/
 project/boot/
 project/plugins/project/
+project/metals.sbt
 .history
 .cache
 .lib/
@@ -34,4 +35,8 @@ project/plugins/project/
 .metals/
 .vscode/
 /.idea/
-website/
+website/build/
+website/yarn.lock
+website/node_modules
+website/.docusaurus
+website/.cache-loader
