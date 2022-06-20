@@ -89,7 +89,7 @@ const config = {
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} Iterators sp. z o.o.`,
+        copyright: `Copyright © ${new Date().getFullYear()} <a href="https://www.iteratorshq.com">Iterators</a> sp. z o.o.`,
       },
       prism: {
         theme: lightCodeTheme,
