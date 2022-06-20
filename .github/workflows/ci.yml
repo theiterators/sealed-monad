@@ -53,3 +53,12 @@ jobs:
         run: sbt ++${{ matrix.scala }} test
       - name: Build documentation
         run: sbt ++${{ matrix.scala }} docs/mdoc
+  docs:
+    name: Website
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: olafurpg/setup-scala@v13
+      - run: sbt '++2.12.15 docs/mdoc'
