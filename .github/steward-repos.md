@@ -1,4 +1,0 @@
-- theiterators/sealed-monad
-- theiterators/kebs
-- theiterators/baklava
-- theiterators/akka-http-microservice
