@@ -23,7 +23,7 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * scala> case object NotFound extends Response
     * scala> val sealedSome: Sealed[Id, Int, Response] = Id(Option(1)).valueOr(NotFound)
     * scala> (for { x <- sealedSome.semiflatMap(_ => Id(42)) } yield Value(x)).run
-    * val res0: cats.Id[Response] = Value(42)
+    * res0: cats.Id[Response] = Value(42)
     * }}}
     */
   final def semiflatMap[B](f: A => F[B]): Sealed[F, B, ADT] = flatMap(a => Sealed.Effect(Eval.later(f(a))))
@@ -46,10 +46,10 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * scala> case object NotFound extends Response
     * scala> val sealedSome: Sealed[Id, Int, Response] = Id(Option(1)).valueOr(NotFound)
     * scala> (for { x <- sealedSome.leftSemiflatTap(_ => Id(println("left"))) } yield Value(x)).run
-    * val res0: cats.Id[Response] = Value(1)
+    * res0: cats.Id[Response] = Value(1)
     * scala> val sealedNone: Sealed[Id, Int, Response] = Id(Option.empty).valueOr(NotFound)
     * scala> (for { x <- sealedNone.leftSemiflatTap(_ => Id(println("left"))) } yield Value(x)).run
-    * val res1: cats.Id[Response] = NotFound
+    * res1: cats.Id[Response] = NotFound
     * // prints 'left'
     * }}}
     */
@@ -75,10 +75,10 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * scala> val sealedSome: Sealed[Id, Int, Response] = Id(Option(1)).valueOr(NotFound)
     * scala> (for { x <- sealedSome.biSemiflatTap(_ => Id(println("left")), _ => Id(println("right"))) } yield Value(x)).run
     * // prints 'right'
-    * val res0: cats.Id[Response] = Value(1)
+    * res0: cats.Id[Response] = Value(1)
     * scala> val sealedNone: Sealed[Id, Int, Response] = Id(Option.empty).valueOr(NotFound)
     * scala> (for { x <- sealedNone.biSemiflatTap(_ => Id(println("left")), _ => Id(println("right"))) } yield Value(x)).run
-    * val res1: cats.Id[Response] = NotFound
+    * res1: cats.Id[Response] = NotFound
     * // prints 'left'
     * }}}
     */
@@ -98,7 +98,7 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * scala> case class Transformed(i: Int) extends Response
     * scala> val sealedSome: Sealed[Id, Int, Response] = Id(Option(1)).valueOr(NotFound)
     * scala> (for { x <- sealedSome.complete(_ => Transformed(2)) } yield Value(x)).run
-    * val res0: cats.Id[Response] = Transformed(2)
+    * res0: cats.Id[Response] = Transformed(2)
     * }}}
     */
   final def complete[ADT1 >: ADT](f: A => ADT1): Sealed[F, Nothing, ADT1] = flatMap(a => Sealed.Result(f(a)))
@@ -116,7 +116,7 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * scala> case class Transformed(i: Int) extends Response
     * scala> val sealedSome: Sealed[Id, Int, Response] = Id(Option(1)).valueOr(NotFound)
     * scala> (for { x <- sealedSome.completeWith(_ => Id(Transformed(2))) } yield Value(x)).run
-    * val res0: cats.Id[Response] = Transformed(2)
+    * res0: cats.Id[Response] = Transformed(2)
     * }}}
     */
   final def completeWith[ADT1 >: ADT](f: A => F[ADT1]): Sealed[F, Nothing, ADT1] = flatMap(a => Sealed.ResultF(Eval.later(f(a))))
@@ -140,12 +140,12 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * scala> case class UnwantedNumber(i: Int) extends Response
     * scala> val sealedSome: Sealed[Id, Int, Response] = Id(Option(1)).valueOr(NotFound)
     * scala> (for { x <- sealedSome.attempt(num => Either.cond(num == 1, Value(num), UnwantedNumber(num))) } yield x).run
-    * val res0: cats.Id[Response] = Value(1)
+    * res0: cats.Id[Response] = Value(1)
     * scala> (for { x <- sealedSome.map(_ => 2).attempt(num => Either.cond(num == 1, Value(num), UnwantedNumber(num))) } yield x).run
-    * val res1: cats.Id[Response] = UnwantedNumber(2)
+    * res1: cats.Id[Response] = UnwantedNumber(2)
     * scala> val sealedNone: Sealed[Id, Int, Response] = Id(Option.empty).valueOr(NotFound)
     * scala> (for { x <- sealedNone.attempt(num => Either.cond(num == 1, Value(num), UnwantedNumber(num))) } yield x).run
-    * val res2: cats.Id[Response] = NotFound
+    * res2: cats.Id[Response] = NotFound
     * }}}
     */
   final def attempt[B, ADT1 >: ADT](f: A => Either[ADT1, B]): Sealed[F, B, ADT1] = map(f).rethrow
@@ -163,12 +163,12 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * scala> case class UnwantedNumber(i: Int) extends Response
     * scala> val sealedSome: Sealed[Id, Int, Response] = Id(Option(1)).valueOr(NotFound)
     * scala> (for { x <- sealedSome.attemptF(num => Id(Either.cond(num == 1, Value(num), UnwantedNumber(num)))) } yield x).run
-    * val res0: cats.Id[Response] = Value(1)
+    * res0: cats.Id[Response] = Value(1)
     * scala> (for { x <- sealedSome.map(_ => 2).attemptF(num => Id(Either.cond(num == 1, Value(num), UnwantedNumber(num)))) } yield x).run
-    * val res1: cats.Id[Response] = UnwantedNumber(2)
+    * res1: cats.Id[Response] = UnwantedNumber(2)
     * scala> val sealedNone: Sealed[Id, Int, Response] = Id(Option.empty).valueOr(NotFound)
     * scala> (for { x <- sealedNone.attemptF(num => Id(Either.cond(num == 1, Value(num), UnwantedNumber(num)))) } yield x).run
-    * val res2: cats.Id[Response] = NotFound
+    * res2: cats.Id[Response] = NotFound
     * }}}
     */
   final def attemptF[B, ADT1 >: ADT](f: A => F[Either[ADT1, B]]): Sealed[F, B, ADT1] = semiflatMap(f).rethrow
@@ -186,10 +186,10 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * scala> case object Reached extends Response
     * scala> val sealedSome: Sealed[Id, Int, Response] = Id(Option(1)).valueOr(NotFound)
     * scala> (for { x <- sealedSome.foldM((adt: Response) => Reached.seal, num => Value(num).seal ) } yield x).run
-    * val res0: cats.Id[Response] = Value(1)
+    * res0: cats.Id[Response] = Value(1)
     * scala> val sealedNone: Sealed[Id, Int, Response] = Id(Option.empty).valueOr(NotFound)
     * scala> (for { x <- sealedNone.foldM((adt: Response) => Reached.seal, num => Value(num).seal ) } yield x).run
-    * val res1: cats.Id[Response] = Reached
+    * res1: cats.Id[Response] = Reached
     * }}}
     */
   final def foldM[B, ADT1 >: ADT](left: ADT1 => Sealed[F, B, ADT1], right: A => Sealed[F, B, ADT1]): Sealed[F, B, ADT1] =
@@ -208,10 +208,10 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * scala> case class Transformed(i: Int) extends Response
     * scala> val sealedSome: Sealed[Id, Int, Response] = Id(Option(1)).valueOr(NotFound)
     * scala> (for { x <- sealedSome.either.map(_.fold(adt => Left(Transformed(2)), number => Right(42))).rethrow } yield Value(x)).run
-    * val res0: cats.Id[Response] = Value(42)
+    * res0: cats.Id[Response] = Value(42)
     * scala> val sealedNone: Sealed[Id, Int, Response] = Id(Option.empty).valueOr(NotFound)
     * scala> (for { x <- sealedNone.either.map(_.fold(adt => Left(Transformed(2)), number => Right(42))).rethrow } yield Value(x)).run
-    * val res1: cats.Id[Response] = Transformed(2)
+    * res1: cats.Id[Response] = Transformed(2)
     * }}}
     */
   final def either: Sealed[F, Either[ADT, A], ADT] = foldM((adt: ADT) => Sealed.Value(Left(adt)), a => Sealed.Value(Right(a)))
@@ -229,11 +229,11 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * scala> case object NotFound extends Response
     * scala> val sealedSome: Sealed[Id, Int, Response] = Id(Option(1)).valueOr(NotFound)
     * scala> (for { x <- sealedSome.inspect(either => either.fold(adt => println(adt), number => println(number))) } yield Value(x)).run
-    * val res0: cats.Id[Response] = Value(1)
+    * res0: cats.Id[Response] = Value(1)
     * // prints '1'
     * scala> val sealedNone: Sealed[Id, Int, Response] = Id(Option.empty).valueOr(NotFound)
     * scala> (for { x <- sealedNone.inspect(either => either.fold(adt => println(adt), number => println(number))) } yield Value(x)).run
-    * val res1: cats.Id[Response] = NotFound
+    * res1: cats.Id[Response] = NotFound
     * // prints 'NotFound'
     * }}}
     */
@@ -254,7 +254,7 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * scala> case class UnwantedNumber(i: Int) extends Response
     * scala> val sealedSome: Sealed[Id, Int, Response] = Id(Option(1)).valueOr(NotFound)
     * scala> (for { x <- sealedSome.ensureOr(num => num == 2, num => UnwantedNumber(num)) } yield Value(x)).run
-    * val res0: cats.Id[Response] = UnwantedNumber(1)
+    * res0: cats.Id[Response] = UnwantedNumber(1)
     * }}}
     */
   final def ensureOr[ADT1 >: ADT](pred: A => Boolean, orElse: A => ADT1): Sealed[F, A, ADT1] =
@@ -273,7 +273,7 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * scala> case object ConditionNotMet extends Response
     * scala> val sealedSome: Sealed[Id, Int, Response] = Id(Option(1)).valueOr(NotFound)
     * scala> (for { x <- sealedSome.ensure(num => num == 1, ConditionNotMet) } yield Value(x)).run
-    * val res0: cats.Id[Response] = Value(1)
+    * res0: cats.Id[Response] = Value(1)
     * }}}
     */
   final def ensure[ADT1 >: ADT](pred: A => Boolean, orElse: => ADT1): Sealed[F, A, ADT1] = ensureOr(pred, _ => orElse)
@@ -291,7 +291,7 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * scala> case object ConditionNotMet extends Response
     * scala> val sealedSome: Sealed[Id, Int, Response] = Id(Option(1)).valueOr(NotFound)
     * scala> (for { x <- sealedSome.ensureNot(num => num == 1, ConditionNotMet) } yield Value(x)).run
-    * val res0: cats.Id[Response] = ConditionNotMet
+    * res0: cats.Id[Response] = ConditionNotMet
     * }}}
     */
   final def ensureNot[ADT1 >: ADT](pred: A => Boolean, orElse: => ADT1): Sealed[F, A, ADT1] = ensure(a => !pred(a), orElse)
@@ -314,11 +314,11 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * scala> case object NotFound extends Response
     * scala> val sealedSome: Sealed[Id, Int, Response] = Id(Option(1)).valueOr(NotFound)
     * scala> (for { x <- sealedSome.tap(_ => println("right")) } yield Value(x)).run
-    * val res0: cats.Id[Response] = Value(1)
+    * res0: cats.Id[Response] = Value(1)
     * // prints 'right'
     * scala> val sealedNone: Sealed[Id, Int, Response] = Id(Option.empty).valueOr(NotFound)
     * scala> (for { x <- sealedNone.flatTap(_ => println("left")) } yield Value(x)).run
-    * val res1: cats.Id[Response] = NotFound
+    * res1: cats.Id[Response] = NotFound
     * // doesn't print anything
     * }}}
     */
@@ -336,11 +336,11 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * scala> case object NotFound extends Response
     * scala> val sealedSome: Sealed[Id, Int, Response] = Id(Option(1)).valueOr(NotFound)
     * scala> (for { x <- sealedSome.flatTap(_ => Id(println("right"))) } yield Value(x)).run
-    * val res0: cats.Id[Response] = Value(1)
+    * res0: cats.Id[Response] = Value(1)
     * // prints 'right'
     * scala> val sealedNone: Sealed[Id, Int, Response] = Id(Option.empty).valueOr(NotFound)
     * scala> (for { x <- sealedNone.flatTap(_ => Id(println("left"))) } yield Value(x)).run
-    * val res1: cats.Id[Response] = NotFound
+    * res1: cats.Id[Response] = NotFound
     * // doesn't print anything
     * }}}
     */
@@ -358,11 +358,11 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * scala> case object NotFound extends Response
     * scala> val sealedSome: Sealed[Id, Int, Response] = Id(Option(1)).valueOr(NotFound)
     * scala> (for { x <- sealedSome.flatTapWhen(num => num == 1, _ => Id(println("right"))) } yield Value(x)).run
-    * val res0: cats.Id[Response] = Value(1)
+    * res0: cats.Id[Response] = Value(1)
     * // prints 'right'
     * scala> val sealedNone: Sealed[Id, Int, Response] = Id(Option(2)).valueOr(NotFound)
     * scala> (for { x <- sealedNone.flatTapWhen(num => num == 1, _ => Id(println("left"))) } yield Value(x)).run
-    * val res1: cats.Id[Response] = NotFound
+    * res1: cats.Id[Response] = NotFound
     * // doesn't print anything
     * }}}
     */

@@ -39,7 +39,7 @@ final class SealedFOptAOps[F[_], A](private val self: F[Option[A]]) extends AnyV
     * res0: List[Response] = List(Value(1))
     * scala> val sealedNone: Sealed[List, Int, Response] = List(Option.empty[Int]).valueOr(NotFound)
     * scala> (for {value <- sealedNone} yield Value(value)).run
-    * res1 : List[Response] = List(NotFound)
+    * res1: List[Response] = List(NotFound)
     * }}}
     */
   def valueOr[ADT](orElse: => ADT): Sealed[F, A, ADT] = Sealed.valueOr(self, orElse)
@@ -58,7 +58,7 @@ final class SealedFOptAOps[F[_], A](private val self: F[Option[A]]) extends AnyV
     * res0: List[Response] = List(Value(1))
     * scala> val sealedNone: Sealed[List, Int, Response] = List(Option.empty[Int]).valueOrF(List(NotFound))
     * scala> (for {value <- sealedNone} yield Value(value)).run
-    * res1 : List[Response] = List(NotFound)
+    * res1: List[Response] = List(NotFound)
     * }}}
     */
   def valueOrF[ADT](orElse: => F[ADT]): Sealed[F, A, ADT] = Sealed.valueOrF(self, orElse)
