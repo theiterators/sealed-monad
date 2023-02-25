@@ -185,10 +185,10 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * scala> case object NotFound extends Response
     * scala> case object Reached extends Response
     * scala> val sealedSome: Sealed[Id, Int, Response] = Id(Option(1)).valueOr(NotFound)
-    * scala> (for {x <- sealedSome.foldM((adt: Response) => Reached.seal, num => Value(num).seal ) } yield x).run
+    * scala> (for { x <- sealedSome.foldM((adt: Response) => Reached.seal, num => Value(num).seal ) } yield x).run
     * val res0: cats.Id[Response] = Value(1)
     * scala> val sealedNone: Sealed[Id, Int, Response] = Id(Option.empty).valueOr(NotFound)
-    * scala> (for { x <- sealedNone.foldM((adt:Response) => Reached.seal, num => Value(num).seal ) } yield x).run
+    * scala> (for { x <- sealedNone.foldM((adt: Response) => Reached.seal, num => Value(num).seal ) } yield x).run
     * val res1: cats.Id[Response] = Reached
     * }}}
     */
