@@ -1,11 +1,8 @@
 package pl.iterators.sealedmonad
 
 import cats._
-
 import Function.const
 import cats.syntax.bitraverse._
-import pl.iterators.sealedmonad.Sealed.{result, valueOrF}
-
 import scala.language.higherKinds
 
 sealed trait Sealed[F[_], +A, +ADT] {
@@ -300,7 +297,7 @@ sealed trait Sealed[F[_], +A, +ADT] {
   final def ensureNot[ADT1 >: ADT](pred: A => Boolean, orElse: => ADT1): Sealed[F, A, ADT1] = ensure(a => !pred(a), orElse)
 
   final def ensureOrF[ADT1 >: ADT](pred: A => Boolean, orElse: A => F[ADT1]): Sealed[F, A, ADT1] =
-    flatMap(a => if (pred(a)) Sealed.Value(a) else result(orElse(a)))
+    flatMap(a => if (pred(a)) Sealed.Value(a) else Sealed.result(orElse(a)))
 
   final def ensureF[ADT1 >: ADT](pred: A => Boolean, orElse: => F[ADT1]): Sealed[F, A, ADT1] =
     ensureOrF(pred, _ => orElse)
