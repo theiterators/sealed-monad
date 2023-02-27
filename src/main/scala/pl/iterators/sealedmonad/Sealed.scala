@@ -296,8 +296,52 @@ sealed trait Sealed[F[_], +A, +ADT] {
     */
   final def ensureNot[ADT1 >: ADT](pred: A => Boolean, orElse: => ADT1): Sealed[F, A, ADT1] = ensure(a => !pred(a), orElse)
 
+  /** Effectful version of `ensureOr`.
+    *
+    * Example:
+    * {{{
+    * scala> import pl.iterators.sealedmonad.Sealed
+    * scala> import pl.iterators.sealedmonad.syntax._
+    * scala> import cats.Id
+    * scala> sealed trait Response
+    * scala> case class Value(i: Int) extends Response
+    * scala> case object NotFound extends Response
+    * scala> case class Transformed(i: Int) extends Response
+    * scala> val sealedSome: Sealed[Id, Int, Response] = Id(Option(1)).valueOr(NotFound)
+    * scala> (for { x <- sealedSome.ensureOrF(num => num == 1, _ => Id(Transformed(2))) } yield Value(x)).run
+    * res0: cats.Id[Response] = Value(1)
+    * scala> (for { x <- sealedSome.ensureOrF(num => num == 2, _ => Id(Transformed(2))) } yield Value(x)).run
+    * res1: cats.Id[Response] = Transformed(2)
+    * scala> val sealedNone: Sealed[Id, Int, Response] = Id(Option.empty).valueOr(NotFound)
+    * scala> (for { x <- sealedNone.ensureOrF(num => num == 1, _ => Id(Transformed(2))) } yield Value(x)).run
+    * res2: cats.Id[Response] = NotFound
+    * }}}
+    */
+
   final def ensureOrF[ADT1 >: ADT](pred: A => Boolean, orElse: A => F[ADT1]): Sealed[F, A, ADT1] =
-    flatMap(a => if (pred(a)) Sealed.Value(a) else Sealed.result(orElse(a)))
+    flatMap(a => if (pred(a)) Sealed.Value(a) else completeWith(orElse))
+
+  /** Effectful version of `ensure`.
+    *
+    * Example:
+    * {{{
+    * scala> import pl.iterators.sealedmonad.Sealed
+    * scala> import pl.iterators.sealedmonad.syntax._
+    * scala> import cats.Id
+    * scala> sealed trait Response
+    * scala> case class Value(i: Int) extends Response
+    * scala> case object NotFound extends Response
+    * scala> case class Transformed(i: Int) extends Response
+    * scala> val sealedSome: Sealed[Id, Int, Response] = Id(Option(1)).valueOr(NotFound)
+    * scala> (for { x <- sealedSome.ensureF(num => num == 1, Id(Transformed(2))) } yield Value(x)).run
+    * res0: cats.Id[Response] = Value(1)
+    * scala> (for { x <- sealedSome.ensureF(num => num == 2, Id(Transformed(2))) } yield Value(x)).run
+    * res1: cats.Id[Response] = Transformed(2)
+    * scala> val sealedNone: Sealed[Id, Int, Response] = Id(Option.empty).valueOr(NotFound)
+    * scala> (for { x <- sealedNone.ensureF(num => num == 1, Id(Transformed(2))) } yield Value(x)).run
+    * res2: cats.Id[Response] = NotFound
+    * }}}
+    */
 
   final def ensureF[ADT1 >: ADT](pred: A => Boolean, orElse: => F[ADT1]): Sealed[F, A, ADT1] =
     ensureOrF(pred, _ => orElse)
@@ -360,7 +404,10 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * scala> (for { x <- sealedSome.flatTapWhen(num => num == 1, _ => Id(println("right"))) } yield Value(x)).run
     * res0: cats.Id[Response] = Value(1)
     * // prints 'right'
-    * scala> val sealedNone: Sealed[Id, Int, Response] = Id(Option(2)).valueOr(NotFound)
+    * scala> (for { x <- sealedSome.flatTapWhen(num => num == 2, _ => Id(println("left"))) } yield Value(x)).run
+    * res1: cats.Id[Response] = Value(1)
+    * // doesn't print anything
+    * scala> val sealedNone: Sealed[Id, Int, Response] = Id(Option.empty).valueOr(NotFound)
     * scala> (for { x <- sealedNone.flatTapWhen(num => num == 1, _ => Id(println("left"))) } yield Value(x)).run
     * res1: cats.Id[Response] = NotFound
     * // doesn't print anything
