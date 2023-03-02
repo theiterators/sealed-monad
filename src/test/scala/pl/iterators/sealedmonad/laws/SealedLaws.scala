@@ -1,6 +1,7 @@
 package pl.iterators.sealedmonad.laws
 
 import cats.Monad
+import cats.data.Ior
 import cats.kernel.laws._
 import pl.iterators.sealedmonad.Sealed
 import pl.iterators.sealedmonad.SealedTestInstances.ADT
@@ -62,6 +63,9 @@ trait SealedLaws[F[_]] {
   def ensureTrueIdentity[A, B](s: Sealed[F, A, B], b: B)  = s.ensure(_ => true, b) <-> s
   def ensureFalseIdentity[A, B](s: Sealed[F, A, B], b: B) = s.ensure(_ => false, b) <-> s.complete(_ => b)
 
+  def ensureFTrueIdentity[A, B](s: Sealed[F, A, B], b: F[B])  = s.ensureF(_ => true, b) <-> s
+  def ensureFFalseIdentity[A, B](s: Sealed[F, A, B], b: F[B]) = s.ensureF(_ => false, b) <-> s.completeWith(_ => b)
+
   def foldMCoherentWithFlatMap[A, B](fa: F[Option[A]], b: B) =
     Sealed(fa).attempt(Either.fromOption(_, b)).foldM[Int, B](_ => Sealed.liftF(0), _ => Sealed.liftF(1)) <-> Sealed(fa).flatMap {
       case None => Sealed.liftF(0)
@@ -72,6 +76,9 @@ trait SealedLaws[F[_]] {
     s.ensure(f, b) <-> s.map(a => Either.cond(f(a), a, b)).rethrow
 
   def ensureCoherence[A, B](s: Sealed[F, A, B], f: A => Boolean, b: B) = s.ensure(f, b) <-> s.ensureNot(a => !f(a), b)
+
+  def ensureFCoherence[A, B](s: Sealed[F, A, B], f: A => Boolean, b: F[B]) =
+    s.ensureF(f, b) <-> s.attemptF(a => if (f(a)) M.pure(Right(a): Either[B, A]) else b.map(x => Left(x): Either[B, A]))
 
   def inspectElimination[A, B, C](s: Sealed[F, A, C], f: Either[C, A] => Option[B]) = s.inspect(Function.unlift(f)) <-> s
 
