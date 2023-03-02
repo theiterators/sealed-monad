@@ -65,6 +65,9 @@ trait SealedLaws[F[_]] {
   def ensureFTrueIdentity[A, B](s: Sealed[F, A, B], b: F[B])  = s.ensureF(_ => true, b) <-> s
   def ensureFFalseIdentity[A, B](s: Sealed[F, A, B], b: F[B]) = s.ensureF(_ => false, b) <-> s.completeWith(_ => b)
 
+  def ensureOrFTrueIdentity[A, B](s: Sealed[F, A, B], b: A => F[B])  = s.ensureOrF(_ => true, b) <-> s
+  def ensureOrFFalseIdentity[A, B](s: Sealed[F, A, B], b: A => F[B]) = s.ensureOrF(_ => false, b) <-> s.completeWith(b)
+
   def foldMCoherentWithFlatMap[A, B](fa: F[Option[A]], b: B) =
     Sealed(fa).attempt(Either.fromOption(_, b)).foldM[Int, B](_ => Sealed.liftF(0), _ => Sealed.liftF(1)) <-> Sealed(fa).flatMap {
       case None => Sealed.liftF(0)
@@ -78,6 +81,12 @@ trait SealedLaws[F[_]] {
 
   def ensureFCoherence[A, B](s: Sealed[F, A, B], f: A => Boolean, b: F[B]) =
     s.ensureF(f, b) <-> s.attemptF(a => if (f(a)) M.pure(Right(a): Either[B, A]) else b.map(x => Left(x): Either[B, A]))
+
+  def ensureFEnsureCoherence[A, B](s: Sealed[F, A, B], f: A => Boolean, b: B) =
+    s.ensureF(f, M.pure(b)) <-> s.ensure(f, b)
+
+  def ensureOrFCoherence[A, B](s: Sealed[F, A, B], f: A => Boolean, b: F[B]) =
+    s.ensureOrF(f, _ => b) <-> s.ensureF(f, b)
 
   def inspectElimination[A, B, C](s: Sealed[F, A, C], f: Either[C, A] => Option[B]) = s.inspect(Function.unlift(f)) <-> s
 
