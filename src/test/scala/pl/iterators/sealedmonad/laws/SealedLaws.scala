@@ -85,7 +85,7 @@ trait SealedLaws[F[_]] {
   def ensureFEnsureCoherence[A, B](s: Sealed[F, A, B], f: A => Boolean, b: B) =
     s.ensureF(f, M.pure(b)) <-> s.ensure(f, b)
 
-  def ensureOrFCoherence[A, B](s: Sealed[F, A, B], f: A => Boolean, b: F[B]) =
+  def ensureOrFEnsureFCoherence[A, B](s: Sealed[F, A, B], f: A => Boolean, b: F[B]) =
     s.ensureOrF(f, _ => b) <-> s.ensureF(f, b)
 
   def inspectElimination[A, B, C](s: Sealed[F, A, C], f: Either[C, A] => Option[B]) = s.inspect(Function.unlift(f)) <-> s
