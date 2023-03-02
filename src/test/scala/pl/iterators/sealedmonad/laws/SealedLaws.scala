@@ -79,7 +79,7 @@ trait SealedLaws[F[_]] {
 
   def ensureCoherence[A, B](s: Sealed[F, A, B], f: A => Boolean, b: B) = s.ensure(f, b) <-> s.ensureNot(a => !f(a), b)
 
-  def ensureFCoherence[A, B](s: Sealed[F, A, B], f: A => Boolean, b: F[B]) =
+  def ensureFAttemptFCoherence[A, B](s: Sealed[F, A, B], f: A => Boolean, b: F[B]) =
     s.ensureF(f, b) <-> s.attemptF(a => if (f(a)) M.pure(Right(a): Either[B, A]) else b.map(x => Left(x): Either[B, A]))
 
   def ensureFEnsureCoherence[A, B](s: Sealed[F, A, B], f: A => Boolean, b: B) =

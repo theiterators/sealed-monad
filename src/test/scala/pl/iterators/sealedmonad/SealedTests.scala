@@ -60,7 +60,7 @@ trait SealedTests[F[_]] extends Laws with SealedTestInstances {
       "ensure consistent with rethrow"               -> forAll(laws.ensureRethrowCoherence[A, ADT] _),
       "ensureF true identity"                        -> forAll(laws.ensureFTrueIdentity[A, ADT] _),
       "ensureF false consistent with completeWith"   -> forAll(laws.ensureFFalseIdentity[A, ADT] _),
-      "ensureF consistent with attemptF"             -> forAll(laws.ensureFCoherence[A, ADT] _),
+      "ensureF consistent with attemptF"             -> forAll(laws.ensureFAttemptFCoherence[A, ADT] _),
       "ensureF consistent with ensure"               -> forAll(laws.ensureFEnsureCoherence[A, ADT] _),
       "ensureOrF consistent with ensureF"            -> forAll(laws.ensureOrFCoherence[A, ADT] _),
       "ensureOrF true identity"                      -> forAll(laws.ensureOrFTrueIdentity[A, ADT] _),
