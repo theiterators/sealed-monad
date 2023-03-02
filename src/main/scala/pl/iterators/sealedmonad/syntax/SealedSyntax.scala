@@ -15,11 +15,13 @@ trait SealedSyntax {
 }
 
 final class SealedFAOps[F[_], A](private val self: F[A]) extends AnyVal {
-  def seal[ADT]: Sealed[F, A, ADT]                                           = Sealed(self)
-  def ensure[ADT](pred: A => Boolean, orElse: => ADT): Sealed[F, A, ADT]     = seal[ADT].ensure(pred, orElse)
-  def ensureOr[ADT](pred: A => Boolean, orElse: A => ADT): Sealed[F, A, ADT] = seal[ADT].ensureOr(pred, orElse)
-  def attempt[ADT, B](f: A => Either[ADT, B]): Sealed[F, B, ADT]             = seal[ADT].attempt(f)
-  def attemptF[ADT, B](f: A => F[Either[ADT, B]]): Sealed[F, B, ADT]         = seal[ADT].attemptF(f)
+  def seal[ADT]: Sealed[F, A, ADT]                                               = Sealed(self)
+  def ensure[ADT](pred: A => Boolean, orElse: => ADT): Sealed[F, A, ADT]         = seal[ADT].ensure(pred, orElse)
+  def ensureOr[ADT](pred: A => Boolean, orElse: A => ADT): Sealed[F, A, ADT]     = seal[ADT].ensureOr(pred, orElse)
+  def ensureF[ADT](pred: A => Boolean, orElse: => F[ADT]): Sealed[F, A, ADT]     = seal[ADT].ensureF(pred, orElse)
+  def ensureOrF[ADT](pred: A => Boolean, orElse: A => F[ADT]): Sealed[F, A, ADT] = seal[ADT].ensureOrF(pred, orElse)
+  def attempt[ADT, B](f: A => Either[ADT, B]): Sealed[F, B, ADT]                 = seal[ADT].attempt(f)
+  def attemptF[ADT, B](f: A => F[Either[ADT, B]]): Sealed[F, B, ADT]             = seal[ADT].attemptF(f)
 }
 
 final class SealedFOptAOps[F[_], A](private val self: F[Option[A]]) extends AnyVal {
@@ -38,7 +40,7 @@ final class SealedFOptAOps[F[_], A](private val self: F[Option[A]]) extends AnyV
     * res0: List[Response] = List(Value(1))
     * scala> val sealedNone: Sealed[List, Int, Response] = List(Option.empty[Int]).valueOr(NotFound)
     * scala> (for {value <- sealedNone} yield Value(value)).run
-    * res1 : List[Response] = List(NotFound)
+    * res1: List[Response] = List(NotFound)
     * }}}
     */
   def valueOr[ADT](orElse: => ADT): Sealed[F, A, ADT] = Sealed.valueOr(self, orElse)
@@ -57,7 +59,7 @@ final class SealedFOptAOps[F[_], A](private val self: F[Option[A]]) extends AnyV
     * res0: List[Response] = List(Value(1))
     * scala> val sealedNone: Sealed[List, Int, Response] = List(Option.empty[Int]).valueOrF(List(NotFound))
     * scala> (for {value <- sealedNone} yield Value(value)).run
-    * res1 : List[Response] = List(NotFound)
+    * res1: List[Response] = List(NotFound)
     * }}}
     */
   def valueOrF[ADT](orElse: => F[ADT]): Sealed[F, A, ADT] = Sealed.valueOrF(self, orElse)
