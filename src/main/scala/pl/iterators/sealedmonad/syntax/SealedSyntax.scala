@@ -82,15 +82,15 @@ final class SealedFAEitherOps[F[_], A, B](private val self: F[Either[A, B]]) ext
     * scala> case class Value(i: Int) extends Response
     * scala> case object NotFound extends Response
     * scala> case class UnwantedNumber(i: Int) extends Response
-    * scala> val sealedRight: Sealed[Id, Int, Response] = Id(Right(1)).rethrow
+    * scala> val sealedRight: Sealed[Id, Int, Response] = Id(Right(1): Either[Response, Int]).fromEither
     * scala> (for {value <- sealedRight} yield Value(value)).run
     * res0: cats.Id[Response] = Value(1)
-    * scala> val sealedLeft: Sealed[Id, Int, Response] = Id(Left(NotFound)).rethrow
+    * scala> val sealedLeft: Sealed[Id, Int, Response] = Id(Left(NotFound): Either[Response, Int]).fromEither
     * scala> (for {value <- sealedLeft} yield Value(value)).run
     * res1: cats.Id[Response] = NotFound
     * }}}
     */
-  def rethrow: Sealed[F, B, A] = Sealed(self).rethrow
+  def fromEither: Sealed[F, B, A] = Sealed(self).rethrow
 }
 
 final class SealedOps[A](private val self: A) extends AnyVal {
