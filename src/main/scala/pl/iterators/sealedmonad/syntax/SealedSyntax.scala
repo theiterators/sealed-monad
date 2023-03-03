@@ -69,6 +69,28 @@ final class SealedFAEitherOps[F[_], A, B](private val self: F[Either[A, B]]) ext
   def merge[ADT](f: Either[A, B] => ADT): Sealed[F, ADT, ADT]     = Sealed(self).complete(f)
   def mergeF[ADT](f: Either[A, B] => F[ADT]): Sealed[F, ADT, ADT] = Sealed(self).completeWith(f)
   def handleError[ADT](f: A => ADT): Sealed[F, B, ADT]            = Sealed.handleError(self)(f)
+
+  /** Returns a Sealed instance containing value `A` if it is Left in Either, else returns a Sealed instance containing value `B` if it is
+    * Right in Either.
+    *
+    * Example:
+    * {{{
+    * scala> import pl.iterators.sealedmonad.Sealed
+    * scala> import pl.iterators.sealedmonad.syntax.SealedFAEitherOps
+    * scala> import cats.Id
+    * scala> sealed trait Response
+    * scala> case class Value(i: Int) extends Response
+    * scala> case object NotFound extends Response
+    * scala> case class UnwantedNumber(i: Int) extends Response
+    * scala> val sealedRight: Sealed[Id, Int, Response] = Id(Right(1): Either[Response, Int]).fromEither
+    * scala> (for {value <- sealedRight} yield Value(value)).run
+    * res0: cats.Id[Response] = Value(1)
+    * scala> val sealedLeft: Sealed[Id, Int, Response] = Id(Left(NotFound): Either[Response, Int]).fromEither
+    * scala> (for {value <- sealedLeft} yield Value(value)).run
+    * res1: cats.Id[Response] = NotFound
+    * }}}
+    */
+  def fromEither: Sealed[F, B, A] = Sealed(self).rethrow
 }
 
 final class SealedOps[A](private val self: A) extends AnyVal {
