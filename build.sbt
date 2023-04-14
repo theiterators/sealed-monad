@@ -22,7 +22,7 @@ libraryDependencies ++= (if (isDotty.value) Nil
 
 // Multiple Scala versions support
 
-val scala_2_12             = "2.12.16"
+val scala_2_12             = "2.12.17"
 val scala_2_13             = "2.13.10"
 val dotty                  = "3.2.2"
 val mainScalaVersion       = scala_2_13
