@@ -61,4 +61,4 @@ jobs:
         with:
           fetch-depth: 0
       - uses: olafurpg/setup-scala@v13
-      - run: sbt '++2.12.16 docs/mdoc'
+      - run: sbt '++2.12.17 docs/mdoc'
