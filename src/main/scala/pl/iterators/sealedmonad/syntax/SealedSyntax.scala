@@ -15,11 +15,13 @@ trait SealedSyntax {
 }
 
 final class SealedFAOps[F[_], A](private val self: F[A]) extends AnyVal {
-  def seal[ADT]: Sealed[F, A, ADT]                                           = Sealed(self)
-  def ensure[ADT](pred: A => Boolean, orElse: => ADT): Sealed[F, A, ADT]     = seal[ADT].ensure(pred, orElse)
-  def ensureOr[ADT](pred: A => Boolean, orElse: A => ADT): Sealed[F, A, ADT] = seal[ADT].ensureOr(pred, orElse)
-  def attempt[ADT, B](f: A => Either[ADT, B]): Sealed[F, B, ADT]             = seal[ADT].attempt(f)
-  def attemptF[ADT, B](f: A => F[Either[ADT, B]]): Sealed[F, B, ADT]         = seal[ADT].attemptF(f)
+  def seal[ADT]: Sealed[F, A, ADT]                                               = Sealed(self)
+  def ensure[ADT](pred: A => Boolean, orElse: => ADT): Sealed[F, A, ADT]         = seal[ADT].ensure(pred, orElse)
+  def ensureOr[ADT](pred: A => Boolean, orElse: A => ADT): Sealed[F, A, ADT]     = seal[ADT].ensureOr(pred, orElse)
+  def ensureF[ADT](pred: A => Boolean, orElse: => F[ADT]): Sealed[F, A, ADT]     = seal[ADT].ensureF(pred, orElse)
+  def ensureOrF[ADT](pred: A => Boolean, orElse: A => F[ADT]): Sealed[F, A, ADT] = seal[ADT].ensureOrF(pred, orElse)
+  def attempt[ADT, B](f: A => Either[ADT, B]): Sealed[F, B, ADT]                 = seal[ADT].attempt(f)
+  def attemptF[ADT, B](f: A => F[Either[ADT, B]]): Sealed[F, B, ADT]             = seal[ADT].attemptF(f)
 }
 
 final class SealedFOptAOps[F[_], A](private val self: F[Option[A]]) extends AnyVal {
@@ -38,7 +40,7 @@ final class SealedFOptAOps[F[_], A](private val self: F[Option[A]]) extends AnyV
     * res0: List[Response] = List(Value(1))
     * scala> val sealedNone: Sealed[List, Int, Response] = List(Option.empty[Int]).valueOr(NotFound)
     * scala> (for {value <- sealedNone} yield Value(value)).run
-    * res1 : List[Response] = List(NotFound)
+    * res1: List[Response] = List(NotFound)
     * }}}
     */
   def valueOr[ADT](orElse: => ADT): Sealed[F, A, ADT] = Sealed.valueOr(self, orElse)
@@ -57,7 +59,7 @@ final class SealedFOptAOps[F[_], A](private val self: F[Option[A]]) extends AnyV
     * res0: List[Response] = List(Value(1))
     * scala> val sealedNone: Sealed[List, Int, Response] = List(Option.empty[Int]).valueOrF(List(NotFound))
     * scala> (for {value <- sealedNone} yield Value(value)).run
-    * res1 : List[Response] = List(NotFound)
+    * res1: List[Response] = List(NotFound)
     * }}}
     */
   def valueOrF[ADT](orElse: => F[ADT]): Sealed[F, A, ADT] = Sealed.valueOrF(self, orElse)
@@ -67,6 +69,28 @@ final class SealedFAEitherOps[F[_], A, B](private val self: F[Either[A, B]]) ext
   def merge[ADT](f: Either[A, B] => ADT): Sealed[F, ADT, ADT]     = Sealed(self).complete(f)
   def mergeF[ADT](f: Either[A, B] => F[ADT]): Sealed[F, ADT, ADT] = Sealed(self).completeWith(f)
   def handleError[ADT](f: A => ADT): Sealed[F, B, ADT]            = Sealed.handleError(self)(f)
+
+  /** Returns a Sealed instance containing value `A` if it is Left in Either, else returns a Sealed instance containing value `B` if it is
+    * Right in Either.
+    *
+    * Example:
+    * {{{
+    * scala> import pl.iterators.sealedmonad.Sealed
+    * scala> import pl.iterators.sealedmonad.syntax.SealedFAEitherOps
+    * scala> import cats.Id
+    * scala> sealed trait Response
+    * scala> case class Value(i: Int) extends Response
+    * scala> case object NotFound extends Response
+    * scala> case class UnwantedNumber(i: Int) extends Response
+    * scala> val sealedRight: Sealed[Id, Int, Response] = Id(Right(1): Either[Response, Int]).fromEither
+    * scala> (for {value <- sealedRight} yield Value(value)).run
+    * res0: cats.Id[Response] = Value(1)
+    * scala> val sealedLeft: Sealed[Id, Int, Response] = Id(Left(NotFound): Either[Response, Int]).fromEither
+    * scala> (for {value <- sealedLeft} yield Value(value)).run
+    * res1: cats.Id[Response] = NotFound
+    * }}}
+    */
+  def fromEither: Sealed[F, B, A] = Sealed(self).rethrow
 }
 
 final class SealedOps[A](private val self: A) extends AnyVal {
