@@ -1,6 +1,3 @@
-import com.jsuereth.sbtpgp.PgpKeys
-import sbtrelease.ReleasePlugin.autoImport._
-import sbtrelease.ReleaseStateTransformations._
 
 val isDotty = Def.setting(CrossVersion.partialVersion(scalaVersion.value).exists(_._1 != 2))
 
@@ -28,29 +25,35 @@ val dotty                  = "3.2.2"
 val mainScalaVersion       = scala_2_13
 val supportedScalaVersions = Seq(scala_2_12, scala_2_13, dotty)
 
+ThisBuild / crossScalaVersions := supportedScalaVersions
+ThisBuild / scalaVersion := mainScalaVersion
+
 lazy val baseSettings = Seq(
 // Scala settings
   homepage     := Some(url("https://github.com/theiterators/sealed-monad")),
-  scalaVersion := mainScalaVersion,
   scalacOptions := Seq("-deprecation", "-unchecked", "-feature", "-encoding", "utf8") ++
     (if (isDotty.value)
        Seq("-language:implicitConversions", "-Ykind-projector", "-Xignore-scala2-macros")
      else Nil),
   scalafmtOnCompile := true,
 // Sonatype settings
-  publishTo            := sonatypePublishTo.value,
   sonatypeProfileName  := "pl.iterators",
-  publishMavenStyle    := true,
   licenses             := Seq("Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0")),
   organization         := "pl.iterators",
   organizationName     := "Iterators",
-  organizationHomepage := Some(url("https://iterato.rs")),
+  organizationHomepage := Some(url("https://www.iteratorshq.com")),
   developers := List(
     Developer(
       id = "mrzeznicki",
       name = "Marcin Rzeźnicki",
       email = "mrzeznicki@iterato.rs",
       url = url("https://github.com/marcin-rzeznicki")
+    ),
+    Developer(
+      id = "pkiersznowski",
+      name = "Paweł Kiersznowski",
+      email = "pkiersznowski@iteratorshq.com",
+      url = url("https://github.com/pk044")
     )
   ),
   scmInfo := Some(
@@ -59,21 +62,13 @@ lazy val baseSettings = Seq(
       connection = "scm:git:https://github.com/theiterators/sealed-monad.git"
     )
   ),
-  credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
-  releasePublishArtifactsAction := PgpKeys.publishSigned.value,
-  crossScalaVersions            := supportedScalaVersions,
-  releaseCrossBuild             := true
+  crossScalaVersions            := supportedScalaVersions
 )
 
 lazy val noPublishSettings =
   Seq(
     publishArtifact   := false,
-    releaseCrossBuild := false,
-    skip / publish    := true,
-    releasePublishArtifactsAction := {
-      val projectName = name.value
-      streams.value.log.warn(s"Publishing for $projectName is turned off")
-    }
+    skip / publish    := true
   )
 
 lazy val examples = project
@@ -123,19 +118,5 @@ lazy val sealedMonad = project
   .settings(baseSettings: _*)
   .settings(
     name        := "sealed-monad",
-    description := "Scala library for nice for-comprehension-style error handling",
-    releaseProcess := Seq(
-      checkSnapshotDependencies,
-      inquireVersions,
-      releaseStepCommandAndRemaining("+publishLocalSigned"),
-      releaseStepCommandAndRemaining("+clean"),
-      releaseStepCommandAndRemaining("+test"),
-      setReleaseVersion,
-      commitReleaseVersion,
-      tagRelease,
-      releaseStepCommandAndRemaining("+publishSigned"),
-      setNextVersion,
-      commitNextVersion,
-      pushChanges
-    )
+    description := "Scala library for nice for-comprehension-style error handling"
   )
