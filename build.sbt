@@ -1,9 +1,8 @@
-
 val isDotty = Def.setting(CrossVersion.partialVersion(scalaVersion.value).exists(_._1 != 2))
 
 // Dependencies
 
-val catsVersion                  = "2.9.0"
+val catsVersion                  = "2.10.0"
 val castsTestkitScalatestVersion = "2.1.5"
 
 libraryDependencies ++= Seq(
@@ -26,11 +25,11 @@ val mainScalaVersion       = scala_2_13
 val supportedScalaVersions = Seq(scala_2_12, scala_2_13, dotty)
 
 ThisBuild / crossScalaVersions := supportedScalaVersions
-ThisBuild / scalaVersion := mainScalaVersion
+ThisBuild / scalaVersion       := mainScalaVersion
 
 lazy val baseSettings = Seq(
 // Scala settings
-  homepage     := Some(url("https://github.com/theiterators/sealed-monad")),
+  homepage := Some(url("https://github.com/theiterators/sealed-monad")),
   scalacOptions := Seq("-deprecation", "-unchecked", "-feature", "-encoding", "utf8") ++
     (if (isDotty.value)
        Seq("-language:implicitConversions", "-Ykind-projector", "-Xignore-scala2-macros")
@@ -62,13 +61,13 @@ lazy val baseSettings = Seq(
       connection = "scm:git:https://github.com/theiterators/sealed-monad.git"
     )
   ),
-  crossScalaVersions            := supportedScalaVersions
+  crossScalaVersions := supportedScalaVersions
 )
 
 lazy val noPublishSettings =
   Seq(
-    publishArtifact   := false,
-    skip / publish    := true
+    publishArtifact := false,
+    skip / publish  := true
   )
 
 lazy val examples = project
