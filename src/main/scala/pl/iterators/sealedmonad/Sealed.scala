@@ -433,6 +433,10 @@ object Sealed extends SealedInstances {
         case Fold(prev, l, r) => F.pure(Left(Fold(prev, runCont(l.asInstanceOf[ADT => Sealed[F, A0, ADT]]), runCont(r))))
         case _                => sys.error("impossible")
       }
+
+    override def map[B](f: A => B) = this.copy(cont = cont andThen (_.map(f)))
+
+    override def flatMap[B, ADT1 >: ADT](f: A => Sealed[F, B, ADT1]): Sealed[F, B, ADT1] = this.copy(cont = cont andThen (_.flatMap(f)))
   }
 
   private[sealedmonad] final case class Effect[F[_], A](fa: Eval[F[A]]) extends Sealed[F, A, Nothing] {
