@@ -27,6 +27,8 @@ sealed trait Sealed[F[_], +A, +ADT] {
     */
   final def semiflatMap[B](f: A => F[B]): Sealed[F, B, ADT] = flatMap(a => Sealed.IntermediateF(Eval.later(f(a))))
 
+  /** Transforms `ADT` to `ADT1` using an effectful function.
+    */
   final def leftSemiflatMap[ADT1](f: ADT => F[ADT1]): Sealed[F, A, ADT1] =
     foldM[A, ADT]((adt: ADT) => ResultF(Eval.later(f(adt))).asInstanceOf[Sealed[F, A, ADT]], a => Intermediate(a))
       .asInstanceOf[Sealed[F, A, ADT1]]
@@ -341,7 +343,6 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * res2: cats.Id[Response] = NotFound
     * }}}
     */
-
   final def ensureOrF[ADT1 >: ADT](pred: A => Boolean, orElse: A => F[ADT1]): Sealed[F, A, ADT1] =
     flatMap(a => if (pred(a)) Sealed.Intermediate(a) else completeWith(orElse))
 
@@ -366,7 +367,6 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * res2: cats.Id[Response] = NotFound
     * }}}
     */
-
   final def ensureF[ADT1 >: ADT](pred: A => Boolean, orElse: => F[ADT1]): Sealed[F, A, ADT1] =
     ensureOrF(pred, _ => orElse)
 
