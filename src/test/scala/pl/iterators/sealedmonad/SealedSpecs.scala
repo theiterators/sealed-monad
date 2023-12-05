@@ -1,6 +1,11 @@
 package pl.iterators.sealedmonad
 
-import pl.iterators.sealedmonad.side_effects.{SealedSideEffectsInspect, SealedSideEffectsSemiflatTap, SealedSideEffectsTap}
+import pl.iterators.sealedmonad.side_effects.{
+  SealedSideEffectsInspect,
+  SealedSideEffectsInspectF,
+  SealedSideEffectsSemiflatTap,
+  SealedSideEffectsTap
+}
 
 class SealedSpecs extends SealedSuite {
 
@@ -52,6 +57,54 @@ class SealedSpecs extends SealedSuite {
 
   test("inspect with Some valueOr with negative ensure negative side effect not invoked") {
     assert(SealedSideEffectsInspect.notInvokeOnSomeValueOrWithNegativeEnsure)
+  }
+
+  test("inspectF side effect not invoked") {
+    assert(SealedSideEffectsInspectF.simplyInvoke)
+  }
+
+  test("inspectF side effect invoked") {
+    assert(SealedSideEffectsInspectF.simplyNotInvoke)
+  }
+
+  test("inspectF with valueOr with None side effect invoked") {
+    assert(SealedSideEffectsInspectF.invokeOnValueOrOnNone)
+  }
+
+  test("inspectF with valueOr with None side effect not invoked") {
+    assert(SealedSideEffectsInspectF.notInvokeOnValueOrOnNone)
+  }
+
+  test("inspectF with valueOr with Some side effect invoked") {
+    assert(SealedSideEffectsInspectF.invokeOnValueOrOnSome)
+  }
+
+  test("inspectF with valueOr with Some side effect not invoked") {
+    assert(SealedSideEffectsInspectF.notInvokeOnValueOrOnSome)
+  }
+
+  test("inspectF with positive ensure side effect invoked") {
+    assert(SealedSideEffectsInspectF.invokeOnPositiveEnsure)
+  }
+
+  test("inspectF with positive ensure side effect not invoked") {
+    assert(SealedSideEffectsInspectF.notInvokeOnPositiveEnsure)
+  }
+
+  test("inspectF with negative ensure negative side effect invoked") {
+    assert(SealedSideEffectsInspectF.invokeOnNegativeEnsure)
+  }
+
+  test("inspectF with negative ensure negative side effect not invoked") {
+    assert(SealedSideEffectsInspectF.notInvokeOnNegativeEnsure)
+  }
+
+  test("inspectF with Some valueOr with negative ensure negative side effect invoked") {
+    assert(SealedSideEffectsInspectF.invokeOnSomeValueOrWithNegativeEnsure)
+  }
+
+  test("inspectF with Some valueOr with negative ensure negative side effect not invoked") {
+    assert(SealedSideEffectsInspectF.notInvokeOnSomeValueOrWithNegativeEnsure)
   }
 
   test("tap side effect invoked") {

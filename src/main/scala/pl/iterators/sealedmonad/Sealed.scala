@@ -4,7 +4,6 @@ import cats._
 import cats.syntax.all._
 
 import scala.Function.const
-import scala.language.higherKinds
 
 sealed trait Sealed[F[_], +A, +ADT] {
   import Sealed._
@@ -240,6 +239,30 @@ sealed trait Sealed[F[_], +A, +ADT] {
     */
   final def inspect(pf: PartialFunction[Either[ADT, A], Any]): Sealed[F, A, ADT] =
     either.map(e => pf.andThen(const(e)(_)).applyOrElse(e, const(e))).rethrow
+
+  /** Executes an effect F and returns unchanged `Sealed[F, A, ADT]`. Works irrespectively of Sealed's current state, in contrary to `tap`.
+    * Useful for effectful logging purposes.
+    *
+    * Example:
+    * {{{
+    * scala> import pl.iterators.sealedmonad.Sealed
+    * scala> import pl.iterators.sealedmonad.syntax._
+    * scala> import cats.Eval
+    * scala> sealed trait Response
+    * scala> case class Value(i: Int) extends Response
+    * scala> case object NotFound extends Response
+    * scala> val sealedSome: Sealed[Eval, Int, Response] = Eval.later(Option(1)).valueOr(NotFound)
+    * scala> (for { x <- sealedSome.inspectF(either => either.fold(adt => Eval.later(println(adt)), number => Eval.later(println(number)))) } yield Value(x)).run.value
+    * val res0: Value = Value(1)
+    * // prints '1'
+    * scala> val sealedNone: Sealed[Eval, Int, Response] = Eval.later(Option.empty).valueOr(NotFound)
+    * scala> (for { x <- sealedNone.inspectF(either => either.fold(adt => Eval.later(println(adt)), number => Eval.later(println(number)))) } yield Value(x)).run.value
+    * val res1: Response = NotFound
+    * // prints 'NotFound'
+    * }}}
+    */
+  final def inspectF(pf: PartialFunction[Either[ADT, A], F[Any]]): Sealed[F, A, ADT] =
+    either.flatTapWhen(e => pf.isDefinedAt(e), pf).rethrow
 
   /** Variation of `ensure` that allows you to access `A` in `orElse` parameter. Returns unchanged Sealed instance if condition is met,
     * otherwise ends execution with specified `ADT`.
