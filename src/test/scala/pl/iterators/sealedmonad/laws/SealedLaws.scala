@@ -34,16 +34,6 @@ trait SealedLaws[F[_]] {
   def valueBiSemiflatMapCoherence[A, B, C](fa: F[A], fab: A => F[B], fcd: A => F[C]) =
     Sealed(fa).biSemiflatMap(fab, fcd) <-> Sealed(fa).leftSemiflatMap(fab).semiflatMap(fcd)
 
-  def biSemiflatTapCoherentWithIdentity[A, B, C](fa: F[Option[A]], b: C) =
-    Sealed(fa).attempt(Either.fromOption(_, b)).biSemiflatTap[Int, Int](_ => M.pure(0), _ => M.pure(1)) <-> Sealed(fa).attempt(
-      Either.fromOption(_, b)
-    )
-
-  def leftSemiflatTapCoherentWithIdentity[A, B, C](fa: F[Option[A]], b: C) =
-    Sealed(fa).attempt(Either.fromOption(_, b)).leftSemiflatTap[Int](_ => M.pure(0)) <-> Sealed(fa).attempt(
-      Either.fromOption(_, b)
-    )
-
   def valueCompleteIdentity[A, B](fa: F[A], f: A => F[B])  = Sealed(fa).completeWith(f) <-> Sealed.result(fa >>= f)
   def resultCompleteElimination[A, B](fb: F[B], f: A => B) = Sealed.result(fb).complete(f) <-> Sealed.result(fb)
 

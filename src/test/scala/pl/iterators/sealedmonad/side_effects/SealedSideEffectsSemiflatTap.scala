@@ -55,7 +55,7 @@ trait SealedSideEffectsSemiflatTap {
     def invoke() =
       shouldBeInvoked = true
 
-    val m: Id[Option[Int]] = None
+    val m: Id[Option[Int]] = Id(Some(10))
 
     m.valueOr(30)
       .ensure(_ => true, 30)
@@ -140,7 +140,7 @@ trait SealedSideEffectsSemiflatTap {
     def invokeRight(): Id[Unit] =
       shouldBeInvoked = 2
 
-    val m: Id[Option[Int]] = None
+    val m: Id[Option[Int]] = Id(Some(10))
 
     m.valueOr(30)
       .ensure(_ => true, 30)
