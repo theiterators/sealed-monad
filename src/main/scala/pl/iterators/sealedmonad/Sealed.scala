@@ -28,9 +28,8 @@ sealed trait Sealed[F[_], +A, +ADT] {
     */
   final def semiflatMap[B](f: A => F[B]): Sealed[F, B, ADT] = flatMap(a => Sealed.IntermediateF(Eval.later(f(a))))
 
-  final def leftSemiflatMap[ADT1](f: ADT => F[ADT1]): Sealed[F, A, ADT1] =
+  final def leftSemiflatMap[ADT1 >: ADT](f: ADT => F[ADT1]): Sealed[F, A, ADT1] =
     foldM[A, ADT]((adt: ADT) => ResultF(Eval.later(f(adt))).asInstanceOf[Sealed[F, A, ADT]], a => Intermediate(a))
-      .asInstanceOf[Sealed[F, A, ADT1]]
 
   /** Executes a side effect if ADT has been reached, and returns unchanged `Sealed[F, A, ADT]`.
     *
@@ -53,13 +52,13 @@ sealed trait Sealed[F[_], +A, +ADT] {
     */
   final def leftSemiflatTap[C](f: ADT => F[C]): Sealed[F, A, ADT] =
     foldM[A, ADT](
-      (adt: ADT) => ResultF(Eval.later(f(adt))).flatMap(_ => Result(adt)).asInstanceOf[Sealed[F, A, ADT]],
+      (adt: ADT) => IntermediateF(Eval.later(f(adt))).flatMap(_ => Result(adt)),
       a => Intermediate(a)
     )
 
   /** Combine leftSemiflatMap and semiflatMap together.
     */
-  final def biSemiflatMap[B, ADT1](fa: ADT => F[ADT1], fb: A => F[B]): Sealed[F, B, ADT1] =
+  final def biSemiflatMap[B, ADT1 >: ADT](fa: ADT => F[ADT1], fb: A => F[B]): Sealed[F, B, ADT1] =
     leftSemiflatMap(fa).semiflatMap(fb)
 
   /** Executes appropriate side effect depending on whether `A` or `ADT` has been reached, and returns unchanged `Sealed[F, A, ADT]`.
@@ -192,8 +191,8 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * res1: cats.Id[Response] = Reached
     * }}}
     */
-  final def foldM[B, ADT1 >: ADT](left: ADT1 => Sealed[F, B, ADT1], right: A => Sealed[F, B, ADT1]): Sealed[F, B, ADT1] =
-    Fold(this, right, left)
+  final def foldM[B, ADT1 >: ADT](left: ADT => Sealed[F, B, ADT1], right: A => Sealed[F, B, ADT1]): Sealed[F, B, ADT1] =
+    Fold(this, right, left.asInstanceOf[ADT1 => Sealed[F, B, ADT1]])
 
   /** Converts `A` into `Either[ADT, A]`. Usually paired with `rethrow`.
     *

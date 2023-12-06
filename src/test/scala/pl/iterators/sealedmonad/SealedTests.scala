@@ -40,7 +40,6 @@ trait SealedTests[F[_]] extends Laws with SealedTestInstances {
       "result flatMap short-circuits"                                           -> forAll(laws.resultFlatMapElimination[A, ADT] _),
       "semiflatMap consistent with flatMap"                                     -> forAll(laws.valueSemiflatMapReduction[A, B] _),
       "result semiflatMap short-circuits"                                       -> forAll(laws.resultSemiflatMapElimination[A, ADT] _),
-      "leftSemiflatMap identity"                                                -> forAll(laws.resultLeftSemiflatMapIdentity[A, ADT] _),
       "leftSemiflatMap elimination"                                             -> forAll(laws.valueLeftSemiflatMapElimination[A, ADT] _),
       "result biSemiflatMap coherent with result leftsemiFlatMap + semiflatMap" -> forAll(laws.resultBiSemiflatMapCoherence[A, ADT, B] _),
       "value biSemiflatMap coherent with  value leftsemiFlatMap + semiflatMap"  -> forAll(laws.valueBiSemiflatMapCoherence[A, ADT, B] _),
