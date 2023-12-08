@@ -59,7 +59,10 @@ sealed trait Sealed[F[_], +A, +ADT] {
   /** Combine leftSemiflatMap and semiflatMap together.
     */
   final def biSemiflatMap[B, ADT1 >: ADT](fa: ADT => F[ADT1], fb: A => F[B]): Sealed[F, B, ADT1] =
-    leftSemiflatMap(fa).semiflatMap(fb)
+    foldM[B, ADT](
+      (adt: ADT) => ResultF(Eval.later(fa(adt))).asInstanceOf[Sealed[F, B, ADT]],
+      a => IntermediateF(Eval.later(fb(a))).asInstanceOf[Sealed[F, B, ADT]]
+    )
 
   /** Executes appropriate side effect depending on whether `A` or `ADT` has been reached, and returns unchanged `Sealed[F, A, ADT]`.
     *
@@ -82,7 +85,10 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * }}}
     */
   final def biSemiflatTap[B, C](fa: ADT => F[C], fb: A => F[B]): Sealed[F, A, ADT] =
-    leftSemiflatTap(fa).tap(fb)
+    foldM[A, ADT](
+      (adt: ADT) => IntermediateF(Eval.later(fa(adt))).flatMap(_ => Result(adt)),
+      a => IntermediateF(Eval.later(fb(a))).flatMap(_ => Intermediate(a))
+    )
 
   /** Finishes the computation by returning Sealed with given ADT.
     *
