@@ -424,41 +424,24 @@ sealed trait Sealed[F[_], +A, +ADT] {
 
   private def feval[A1 >: A, ADT1 >: ADT](implicit
       F: Monad[F]
-  ): Eval[F[Either[A1, ADT1]]] = this match {
-    case Pure(Left(a))        => Eval.later(a.asLeft[ADT1].pure[F]).asInstanceOf[Eval[F[Either[A1, ADT1]]]]
-    case Pure(Right(adt))     => Eval.later(adt.asRight[A1].pure[F]).asInstanceOf[Eval[F[Either[A1, ADT1]]]]
-    case Suspend(Left(fa))    => Eval.later(fa.map(_.asLeft[ADT1]))
-    case Suspend(Right(fadt)) => Eval.later(fadt.map(_.asRight[A1]))
-//    case Intermediate(value)  => Eval.later(value.asLeft[ADT1].pure[F]).asInstanceOf[Eval[F[Either[A1, ADT1]]]]
-//    case IntermediateF(value) => value.map(_.map(_.asLeft[ADT1]))
-//    case Result(value)        => Eval.later(value.asRight[A1].pure[F]).asInstanceOf[Eval[F[Either[A1, ADT1]]]]
-//    case ResultF(value) => value.map(_.map(_.asRight[A1]))
-    case Defer(value) => value().feval[A1, ADT1]
-//    case FlatMap(current, next) =>
-//      current.feval
-//        .map { feither =>
-//          feither.flatMap {
-//            case scala.Left(value) =>
-//              next(value).feval[A1, ADT1].value
-//            case either =>
-//              either.pure[F].asInstanceOf[F[Either[A1, ADT1]]]
-//          }
-//        }
-//        .asInstanceOf[Eval[F[Either[A1, ADT1]]]]
+  ): F[Either[A1, ADT1]] = this match {
+    case Pure(Left(a))        => a.asLeft[ADT1].pure[F].asInstanceOf[F[Either[A1, ADT1]]]
+    case Pure(Right(adt))     => adt.asRight[A1].pure[F].asInstanceOf[F[Either[A1, ADT1]]]
+    case Suspend(Left(fa))    => fa.map(_.asLeft[ADT1])
+    case Suspend(Right(fadt)) => fadt.map(_.asRight[A1])
+    case Defer(value)         => value().feval[A1, ADT1]
     case Transform(current, left, right) =>
       current.feval
-        .map { feither =>
-          feither.flatMap {
-            case scala.Left(value) =>
-              left(value).feval[A1, ADT1].value
-            case scala.Right(value) =>
-              right(value).feval[A1, ADT1].value
-          }
+        .flatMap {
+          case scala.Left(value) =>
+            left(value).feval[A1, ADT1]
+          case scala.Right(value) =>
+            right(value).feval[A1, ADT1]
         }
-        .asInstanceOf[Eval[F[Either[A1, ADT1]]]]
+        .asInstanceOf[F[Either[A1, ADT1]]]
   }
 
-  final def run[ADT1 >: ADT](implicit ev: A <:< ADT1, F: Monad[F]): F[ADT1] = feval[A, ADT].value.map(_.fold(ev, identity))
+  final def run[ADT1 >: ADT](implicit ev: A <:< ADT1, F: Monad[F]): F[ADT1] = feval[A, ADT].map(_.fold(ev, identity))
 }
 
 object Sealed extends SealedInstances {
@@ -487,19 +470,6 @@ object Sealed extends SealedInstances {
 
   def bimap[F[_], A, B, C, ADT](fa: F[Either[A, B]])(f: A => ADT)(fb: B => C): Sealed[F, C, ADT] =
     apply(fa).attempt(_.leftMap(f).map(fb))
-
-//  private final case class Intermediate[F[_], A](value: A) extends Sealed[F, A, Nothing]
-
-//  private final case class IntermediateF[F[_], A](value: Eval[F[A]]) extends Sealed[F, A, Nothing]
-
-  // private final case class Result[F[_], ADT](value: ADT) extends Sealed[F, Nothing, ADT]
-
-//  private final case class ResultF[F[_], ADT](value: Eval[F[ADT]]) extends Sealed[F, Nothing, ADT]
-
-//  private final case class FlatMap[F[_], A0, A, ADT](
-//      current: Sealed[F, A0, ADT],
-//      next: A0 => Sealed[F, A, ADT]
-//  ) extends Sealed[F, A, ADT]
 
   private final case class Pure[F[_], A, ADT](
       value: Either[A, ADT]
