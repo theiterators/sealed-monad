@@ -10,6 +10,9 @@ sealed trait Sealed[F[_], +A, +ADT] {
   def map[B](f: A => B): Sealed[F, B, ADT] = Transform(this, f.andThen(left[F, B, ADT]), right[F, B, ADT])
   def flatMap[B, ADT1 >: ADT](f: A => Sealed[F, B, ADT1]): Sealed[F, B, ADT1] = Transform(this, f, right[F, B, ADT1])
 
+  /** Alias for map(_ => ()) */
+  final def void: Sealed[F, Unit, ADT] = map(_ => ())
+
   /** Transforms `A` to `B` using an effectful function.
     *
     * Example:
