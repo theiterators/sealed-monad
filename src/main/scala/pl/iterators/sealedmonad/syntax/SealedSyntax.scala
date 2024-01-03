@@ -20,8 +20,8 @@ final class SealedFAOps[F[_], A](private val self: F[A]) extends AnyVal {
   def ensureOr[ADT](pred: A => Boolean, orElse: A => ADT): Sealed[F, A, ADT]     = seal[ADT].ensureOr(pred, orElse)
   def ensureF[ADT](pred: A => Boolean, orElse: => F[ADT]): Sealed[F, A, ADT]     = seal[ADT].ensureF(pred, orElse)
   def ensureOrF[ADT](pred: A => Boolean, orElse: A => F[ADT]): Sealed[F, A, ADT] = seal[ADT].ensureOrF(pred, orElse)
-  def attempt[ADT, B](f: A => Either[ADT, B]): Sealed[F, B, ADT]                 = seal[ADT].attempt(f)
-  def attemptF[ADT, B](f: A => F[Either[ADT, B]]): Sealed[F, B, ADT]             = seal[ADT].attemptF(f)
+  def attempt[B, ADT](f: A => Either[ADT, B]): Sealed[F, B, ADT]                 = seal[ADT].attempt(f)
+  def attemptF[B, ADT](f: A => F[Either[ADT, B]]): Sealed[F, B, ADT]             = seal[ADT].attemptF(f)
 }
 
 final class SealedFOptAOps[F[_], A](private val self: F[Option[A]]) extends AnyVal {
