@@ -4,7 +4,6 @@ import cats._
 import cats.syntax.all._
 
 import scala.Function.const
-import scala.language.higherKinds
 
 sealed trait Sealed[F[_], +A, +ADT] {
   import Sealed._
@@ -29,7 +28,7 @@ sealed trait Sealed[F[_], +A, +ADT] {
   final def semiflatMap[B](f: A => F[B]): Sealed[F, B, ADT] = Transform(this, f.andThen(leftF), right[F, B, ADT])
 
   final def leftSemiflatMap[ADT1 >: ADT](f: ADT => F[ADT1]): Sealed[F, A, ADT1] =
-    Transform(this, left[F, A, ADT1], f.andThen(rightF[F, A, ADT1]).asInstanceOf[ADT1 => Sealed[F, A, ADT1]])
+    Transform(this, left[F, A, ADT1], f.andThen(rightF))
 
   /** Executes a side effect if ADT has been reached, and returns unchanged `Sealed[F, A, ADT]`.
     *
@@ -51,18 +50,16 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * }}}
     */
   final def leftSemiflatTap[C](f: ADT => F[C]): Sealed[F, A, ADT] =
-    foldM[A, ADT](
-      (adt: ADT) => defer(leftF(f(adt))).flatMap(_ => right(adt)),
-      a => left(a)
+    Transform(
+      this,
+      left[F, A, ADT],
+      (adt: ADT) => Transform(leftF(f(adt)), (_: C) => right[F, A, ADT](adt), (_: Any) => right(adt))
     )
 
   /** Combine leftSemiflatMap and semiflatMap together.
     */
   final def biSemiflatMap[B, ADT1 >: ADT](fa: ADT => F[ADT1], fb: A => F[B]): Sealed[F, B, ADT1] =
-    foldM[B, ADT](
-      (adt: ADT) => rightF[F, B, ADT1](fa(adt)).asInstanceOf[Sealed[F, B, ADT]],
-      a => defer(leftF(fb(a))).asInstanceOf[Sealed[F, B, ADT]]
-    )
+    Transform(this, (a: A) => leftF[F, B, ADT1](fb(a)), (adt: ADT) => rightF[F, B, ADT1](fa(adt)))
 
   /** Executes appropriate side effect depending on whether `A` or `ADT` has been reached, and returns unchanged `Sealed[F, A, ADT]`.
     *
@@ -85,9 +82,10 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * }}}
     */
   final def biSemiflatTap[B, C](fa: ADT => F[C], fb: A => F[B]): Sealed[F, A, ADT] =
-    foldM[A, ADT](
-      (adt: ADT) => defer(leftF(fa(adt))).flatMap(_ => right(adt)),
-      a => defer(leftF(fb(a))).flatMap(_ => left(a))
+    Transform(
+      this,
+      (a: A) => Transform(leftF[F, B, ADT](fb(a)), (_: B) => left[F, A, ADT](a), (adt: ADT) => right[F, A, ADT](adt)),
+      (adt: ADT) => Transform(leftF[F, C, ADT](fa(adt)), (_: C) => right[F, A, ADT](adt), (adt: ADT) => right[F, A, ADT](adt))
     )
 
   /** Finishes the computation by returning Sealed with given ADT.
@@ -198,7 +196,7 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * }}}
     */
   final def foldM[B, ADT1 >: ADT](left: ADT => Sealed[F, B, ADT1], right: A => Sealed[F, B, ADT1]): Sealed[F, B, ADT1] =
-    Transform(this, right, left.asInstanceOf[ADT1 => Sealed[F, B, ADT1]])
+    Transform(this, right, left)
 
   /** Converts `A` into `Either[ADT, A]`. Usually paired with `rethrow`.
     *
@@ -220,7 +218,7 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * }}}
     */
   final def either: Sealed[F, Either[ADT, A], ADT] =
-    foldM((adt: ADT) => left(Either.left(adt)), a => left(Either.right(a)))
+    foldM(adt => left(Either.left(adt)), a => left(Either.right(a)))
 
   /** Executes a fire-and-forget side effect and returns unchanged `Sealed[F, A, ADT]`. Works irrespectively of Sealed's current state, in
     * contrary to `tap`. Useful for logging purposes.
@@ -422,26 +420,7 @@ sealed trait Sealed[F[_], +A, +ADT] {
   final def flatTapWhen[B](cond: A => Boolean, f: A => F[B]): Sealed[F, A, ADT] =
     flatMap(a => if (cond(a)) flatTap(f) else left(a))
 
-  private def feval[A1 >: A, ADT1 >: ADT](implicit
-      F: Monad[F]
-  ): F[Either[A1, ADT1]] = this match {
-    case Pure(Left(a))        => a.asLeft[ADT1].pure[F].asInstanceOf[F[Either[A1, ADT1]]]
-    case Pure(Right(adt))     => adt.asRight[A1].pure[F].asInstanceOf[F[Either[A1, ADT1]]]
-    case Suspend(Left(fa))    => fa.map(_.asLeft[ADT1])
-    case Suspend(Right(fadt)) => fadt.map(_.asRight[A1])
-    case Defer(value)         => value().feval[A1, ADT1]
-    case Transform(current, left, right) =>
-      current.feval
-        .flatMap {
-          case scala.Left(value) =>
-            left(value).feval[A1, ADT1]
-          case scala.Right(value) =>
-            right(value).feval[A1, ADT1]
-        }
-        .asInstanceOf[F[Either[A1, ADT1]]]
-  }
-
-  final def run[ADT1 >: ADT](implicit ev: A <:< ADT1, F: Monad[F]): F[ADT1] = feval[A, ADT].map(_.fold(ev, identity))
+  final def run[ADT1 >: ADT](implicit ev: A <:< ADT1, F: Monad[F]): F[ADT1] = eval(this).map(_.fold(ev, identity))
 }
 
 object Sealed extends SealedInstances {
@@ -471,22 +450,36 @@ object Sealed extends SealedInstances {
   def bimap[F[_], A, B, C, ADT](fa: F[Either[A, B]])(f: A => ADT)(fb: B => C): Sealed[F, C, ADT] =
     apply(fa).attempt(_.leftMap(f).map(fb))
 
+  /** Represents either an intermediate A or a final ADT.
+    */
   private final case class Pure[F[_], A, ADT](
       value: Either[A, ADT]
   ) extends Sealed[F, A, ADT]
 
+  /** Represents an intermediate F[A] or a final F[ADT].
+    */
   private final case class Suspend[F[_], A, ADT](
       fa: Either[F[A], F[ADT]]
   ) extends Sealed[F, A, ADT]
 
+  /** Represents a deferred computation.
+    */
   private final case class Defer[F[_], A, ADT](
       value: () => Sealed[F, A, ADT]
   ) extends Sealed[F, A, ADT]
 
-  private final case class Transform[F[_], A0, A, ADT](
-      current: Sealed[F, A0, ADT],
+  /** Represents a transformation on either intermediate A0 or final ADT0 value.
+    *
+    * Mind that the naming here might be a bit confusing because `left` is a transformation that is applied when we haven't reached the
+    * final ADT yet, and `right` is a transformation that is applied when we have reached the final ADT.
+    *
+    * On the user side Sealed behaves similar to EitherT, so `left` applies to final ADT and right applies to intermediate A. See `foldM`
+    * for an example.
+    */
+  private final case class Transform[F[_], A0, A, ADT0, ADT](
+      current: Sealed[F, A0, ADT0],
       left: A0 => Sealed[F, A, ADT],
-      right: ADT => Sealed[F, A, ADT]
+      right: ADT0 => Sealed[F, A, ADT]
   ) extends Sealed[F, A, ADT]
 
   private def left[F[_], A, ADT](value: A): Sealed[F, A, ADT]        = Pure(Left(value))
@@ -495,6 +488,9 @@ object Sealed extends SealedInstances {
   private def rightF[F[_], A, ADT](value: F[ADT]): Sealed[F, A, ADT] = Suspend(Right(value))
   private def defer[F[_], A, ADT](thunk: => Sealed[F, A, ADT])       = Defer(() => thunk)
 
+  /** Does the heavy lifting. There's a trampoline to advance only one step forward. Transform is unrolled and rewritten to avoid nested
+    * functions and offer stack safety.
+    */
   private def eval[F[_], A, ADT](value: Sealed[F, A, ADT])(implicit F: Monad[F]): F[Either[A, ADT]] = {
     type Intermediate = Sealed[F, A, ADT]
     type Final        = Either[A, ADT]
@@ -511,13 +507,24 @@ object Sealed extends SealedInstances {
           case Pure(Right(adt))     => recur(onADT(adt))
           case Suspend(Left(fa))    => fa.flatMap(a => recur(Transform(Pure(Left(a)), onA, onADT)))
           case Suspend(Right(fadt)) => fadt.flatMap(adt => recur(Transform(Pure(Right(adt)), onA, onADT)))
-          case Defer(value)         => recur(value().asInstanceOf[Intermediate])
+          case Defer(value)         => recur(Transform(value(), onA, onADT))
           case Transform(next, onA0, onADT0) =>
+            // the asInstanceOf below are for cross Scala 2/3 compatibility and can be avoided when src code would be split
             recur(
-              Transform[F, Any, A, ADT](
+              Transform[F, Any, A, Any, ADT](
                 next,
-                a0 => Transform(defer(onA0(a0)), onA, onADT),
-                adt0 => Transform(defer(onADT0(adt0)), onA, onADT)
+                (a0: Any) =>
+                  Transform[F, Any, A, Any, ADT](
+                    defer(onA0.asInstanceOf[Any => Sealed[F, A, ADT]](a0)),
+                    onA.asInstanceOf[Any => Sealed[F, A, ADT]],
+                    onADT.asInstanceOf[Any => Sealed[F, A, ADT]]
+                  ),
+                (adt0: Any) =>
+                  Transform[F, Any, A, Any, ADT](
+                    defer(onADT0.asInstanceOf[Any => Sealed[F, Any, Any]](adt0)),
+                    onA.asInstanceOf[Any => Sealed[F, A, ADT]],
+                    onADT.asInstanceOf[Any => Sealed[F, A, ADT]]
+                  )
               )
             )
         }
