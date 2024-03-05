@@ -19,7 +19,7 @@ libraryDependencies ++= (if (isDotty.value) Nil
 // Multiple Scala versions support
 
 val scala_2_12             = "2.12.18"
-val scala_2_13             = "2.13.12"
+val scala_2_13             = "2.13.13"
 val dotty                  = "3.3.1"
 val mainScalaVersion       = scala_2_13
 val supportedScalaVersions = Seq(scala_2_12, scala_2_13, dotty)
