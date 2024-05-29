@@ -2,7 +2,7 @@ val isDotty = Def.setting(CrossVersion.partialVersion(scalaVersion.value).exists
 
 // Dependencies
 
-val catsVersion                  = "2.10.0"
+val catsVersion                  = "2.12.0"
 val castsTestkitScalatestVersion = "2.1.5"
 
 libraryDependencies ++= Seq(
