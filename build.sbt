@@ -2,7 +2,7 @@ val isDotty = Def.setting(CrossVersion.partialVersion(scalaVersion.value).exists
 
 // Dependencies
 
-val catsVersion                  = "2.10.0"
+val catsVersion                  = "2.12.0"
 val castsTestkitScalatestVersion = "2.1.5"
 
 libraryDependencies ++= Seq(
@@ -14,11 +14,11 @@ libraryDependencies ++= Seq(
 
 libraryDependencies ++= (if (isDotty.value) Nil
                          else
-                           Seq(compilerPlugin("org.typelevel" %% "kind-projector" % "0.13.2" cross CrossVersion.full)))
+                           Seq(compilerPlugin("org.typelevel" %% "kind-projector" % "0.13.3" cross CrossVersion.full)))
 
 // Multiple Scala versions support
 
-val scala_2_12             = "2.12.18"
+val scala_2_12             = "2.12.19"
 val scala_2_13             = "2.13.14"
 val dotty                  = "3.3.1"
 val mainScalaVersion       = scala_2_13
