@@ -3,6 +3,8 @@ package pl.iterators.sealedmonad.examples
 import cats.{Eq, Monad}
 import org.scalacheck.{Arbitrary, Cogen}
 import Options._
+import org.typelevel.discipline.Laws
+import org.scalacheck.Prop
 
 import scala.language.higherKinds
 
@@ -21,10 +23,10 @@ trait AllTests[M[_]] extends OptionsTests[M] {
       EqMLogResp: Eq[M[LoginResponse]],
       EqMConfirmResp: Eq[M[ConfirmResponse]]
   ) = new RuleSet {
-    override val name    = "all"
-    override val bases   = Seq.empty
-    override val parents = Seq(options)
-    override val props   = Seq.empty
+    override val name                               = "all"
+    override val bases: Seq[(String, Laws#RuleSet)] = Seq.empty
+    override val parents: Seq[RuleSet]              = Seq(options)
+    override val props: Seq[(String, Prop)]         = Seq.empty
   }
 }
 

@@ -7,18 +7,6 @@ val castsTestkitScalatestVersion = "2.1.5"
 val scalatestVersion             = "3.2.19"
 val disciplineVersion            = "2.3.0"
 
-libraryDependencies ++= Seq(
-  "org.typelevel" %% "cats-core"            % catsVersion,
-  "org.typelevel" %% "cats-laws"            % catsVersion       % Test,
-  "org.typelevel" %% "cats-testkit"         % catsVersion       % Test,
-  "org.scalatest" %% "scalatest"            % scalatestVersion  % Test,
-  "org.typelevel" %% "discipline-scalatest" % disciplineVersion % Test
-)
-
-libraryDependencies ++= (if (isScala3.value) Nil
-                         else
-                           Seq(compilerPlugin("org.typelevel" %% "kind-projector" % "0.13.3" cross CrossVersion.full)))
-
 // Multiple Scala versions support
 
 val scala_2_13             = "2.13.15"
@@ -52,6 +40,15 @@ lazy val baseSettings = Seq(
                          "-encoding",
                          "utf8"
                        )),
+  libraryDependencies ++= Seq(
+    "org.typelevel" %%% "cats-core"            % catsVersion,
+    "org.typelevel" %%% "cats-laws"            % catsVersion       % Test,
+    "org.typelevel" %%% "cats-testkit"         % catsVersion       % Test,
+    "org.scalatest" %%% "scalatest"            % scalatestVersion  % Test,
+    "org.typelevel" %%% "discipline-scalatest" % disciplineVersion % Test
+  ) ++ (if (isScala3.value) Nil
+        else
+          Seq(compilerPlugin("org.typelevel" %% "kind-projector" % "0.13.3" cross CrossVersion.full))),
   scalafmtOnCompile := true,
 // Sonatype settings
   sonatypeProfileName  := "pl.iterators",
@@ -90,7 +87,7 @@ lazy val noPublishSettings =
 
 lazy val examples = project
   .in(file("examples"))
-  .dependsOn(sealedMonad % "test->test;compile->compile")
+  .dependsOn(sealedMonad.jvm % "test->test;compile->compile")
   .settings(baseSettings: _*)
   .settings(noPublishSettings: _*)
   .settings(
@@ -101,7 +98,7 @@ lazy val examples = project
 
 lazy val docs = project
   .in(file("sealed-docs"))
-  .dependsOn(sealedMonad % "test->test;compile->compile")
+  .dependsOn(sealedMonad.jvm % "test->test;compile->compile")
   .enablePlugins(MdocPlugin, DocusaurusPlugin)
   .settings(baseSettings: _*)
   .settings(noPublishSettings: _*)
@@ -118,7 +115,7 @@ lazy val docs = project
 
 lazy val benchmarks = project
   .in(file("benchmarks"))
-  .dependsOn(sealedMonad % "test->test;compile->compile")
+  .dependsOn(sealedMonad.jvm % "test->test;compile->compile")
   .enablePlugins(JmhPlugin)
   .settings(baseSettings: _*)
   .settings(noPublishSettings: _*)
@@ -130,10 +127,17 @@ lazy val benchmarks = project
 
 addCommandAlias("flame", "benchmarks/jmh:run -p tokens=64 -prof jmh.extras.Async:dir=target/flamegraphs;flameGraphOpts=--width,1900")
 
-lazy val sealedMonad = project
-  .in(file("."))
+lazy val sealedMonad = crossProject(JSPlatform, JVMPlatform, NativePlatform)
+  .withoutSuffixFor(JVMPlatform)
+  .crossType(CrossType.Pure)
+  .in(file("sealedmonad"))
+  .jsConfigure(_.disablePlugins(DoctestPlugin))
   .settings(baseSettings: _*)
   .settings(
     name        := "sealed-monad",
     description := "Scala library for nice for-comprehension-style error handling"
   )
+
+// lazy val root = project
+//   .in(file("."))
+//   .aggregate(sealedMonad.jvm, sealedMonad.js, sealedMonad.native, examples, docs, benchmarks)
