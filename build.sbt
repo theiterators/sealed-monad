@@ -1,4 +1,4 @@
-val isDotty = Def.setting(CrossVersion.partialVersion(scalaVersion.value).exists(_._1 != 2))
+val isScala3 = Def.setting(CrossVersion.partialVersion(scalaVersion.value).exists(_._1 != 2))
 
 // Dependencies
 
@@ -12,17 +12,16 @@ libraryDependencies ++= Seq(
   "org.typelevel" %% "cats-testkit-scalatest" % castsTestkitScalatestVersion % Test
 )
 
-libraryDependencies ++= (if (isDotty.value) Nil
+libraryDependencies ++= (if (isScala3.value) Nil
                          else
                            Seq(compilerPlugin("org.typelevel" %% "kind-projector" % "0.13.3" cross CrossVersion.full)))
 
 // Multiple Scala versions support
 
-val scala_2_12             = "2.12.19"
-val scala_2_13             = "2.13.14"
-val dotty                  = "3.3.1"
+val scala_2_13             = "2.13.15"
+val scala_3                = "3.3.3"
 val mainScalaVersion       = scala_2_13
-val supportedScalaVersions = Seq(scala_2_12, scala_2_13, dotty)
+val supportedScalaVersions = Seq(scala_2_13, scala_3)
 
 ThisBuild / crossScalaVersions := supportedScalaVersions
 ThisBuild / scalaVersion       := mainScalaVersion
@@ -30,10 +29,26 @@ ThisBuild / scalaVersion       := mainScalaVersion
 lazy val baseSettings = Seq(
 // Scala settings
   homepage := Some(url("https://github.com/theiterators/sealed-monad")),
-  scalacOptions := Seq("-deprecation", "-unchecked", "-feature", "-encoding", "utf8") ++
-    (if (isDotty.value)
-       Seq("-language:implicitConversions", "-Ykind-projector", "-Xignore-scala2-macros")
-     else Nil),
+  scalacOptions ++= (if (isScala3.value)
+                       Seq(
+                         "-deprecation",
+                         "-unchecked",
+                         "-feature",
+                         "-language:implicitConversions",
+                         "-Ykind-projector:underscores",
+                         "-encoding",
+                         "utf8"
+                       )
+                     else
+                       Seq(
+                         "-deprecation",
+                         "-unchecked",
+                         "-feature",
+                         "-Xsource:3",
+                         "-P:kind-projector:underscore-placeholders",
+                         "-encoding",
+                         "utf8"
+                       )),
   scalafmtOnCompile := true,
 // Sonatype settings
   sonatypeProfileName  := "pl.iterators",
@@ -43,10 +58,10 @@ lazy val baseSettings = Seq(
   organizationHomepage := Some(url("https://www.iteratorshq.com")),
   developers := List(
     Developer(
-      id = "mrzeznicki",
-      name = "Marcin Rzeźnicki",
-      email = "mrzeznicki@iterato.rs",
-      url = url("https://github.com/marcin-rzeznicki")
+      id = "luksow",
+      name = "Łukasz Sowa",
+      email = "lukasz@iteratorshq.com",
+      url = url("https://github.com/luksow")
     ),
     Developer(
       id = "pkiersznowski",
