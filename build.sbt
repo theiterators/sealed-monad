@@ -4,12 +4,15 @@ val isScala3 = Def.setting(CrossVersion.partialVersion(scalaVersion.value).exist
 
 val catsVersion                  = "2.12.0"
 val castsTestkitScalatestVersion = "2.1.5"
+val scalatestVersion             = "3.2.19"
+val disciplineVersion            = "2.3.0"
 
 libraryDependencies ++= Seq(
-  "org.typelevel" %% "cats-core"              % catsVersion,
-  "org.typelevel" %% "cats-laws"              % catsVersion                  % Test,
-  "org.typelevel" %% "cats-testkit"           % catsVersion                  % Test,
-  "org.typelevel" %% "cats-testkit-scalatest" % castsTestkitScalatestVersion % Test
+  "org.typelevel" %% "cats-core"            % catsVersion,
+  "org.typelevel" %% "cats-laws"            % catsVersion       % Test,
+  "org.typelevel" %% "cats-testkit"         % catsVersion       % Test,
+  "org.scalatest" %% "scalatest"            % scalatestVersion  % Test,
+  "org.typelevel" %% "discipline-scalatest" % disciplineVersion % Test
 )
 
 libraryDependencies ++= (if (isScala3.value) Nil

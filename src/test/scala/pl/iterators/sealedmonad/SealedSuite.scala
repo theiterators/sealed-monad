@@ -1,5 +1,7 @@
 package pl.iterators.sealedmonad
 
-import cats.tests.CatsSuite
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatestplus.scalacheck.Checkers
+import org.typelevel.discipline.scalatest.FunSuiteDiscipline
 
-abstract class SealedSuite extends CatsSuite with SealedTestInstances
+abstract class SealedSuite extends AnyFunSuite with FunSuiteDiscipline with Checkers with SealedTestInstances
