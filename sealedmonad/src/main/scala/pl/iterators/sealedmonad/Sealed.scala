@@ -557,13 +557,13 @@ object Sealed extends SealedInstances {
   }
 }
 
-private final class SealedMonad[F[_], ADT] extends StackSafeMonad[Sealed[F, *, ADT]] {
-  override def pure[A](x: A)                                                   = Sealed.liftF(x)
-  override def flatMap[A, B](fa: Sealed[F, A, ADT])(f: A => Sealed[F, B, ADT]) = fa.flatMap(f)
-  override def map[A, B](fa: Sealed[F, A, ADT])(f: A => B)                     = fa.map(f)
-  override def widen[A, B >: A](fa: Sealed[F, A, ADT])                         = fa
+private final class SealedMonad[F[_], ADT] extends StackSafeMonad[Sealed[F, _, ADT]] {
+  override def pure[A](x: A): Sealed[F, A, ADT]                                                   = Sealed.liftF(x)
+  override def flatMap[A, B](fa: Sealed[F, A, ADT])(f: A => Sealed[F, B, ADT]): Sealed[F, B, ADT] = fa.flatMap(f)
+  override def map[A, B](fa: Sealed[F, A, ADT])(f: A => B): Sealed[F, B, ADT]                     = fa.map(f)
+  override def widen[A, B >: A](fa: Sealed[F, A, ADT]): Sealed[F, B, ADT]                         = fa
 }
 
 trait SealedInstances {
-  implicit def sealedMonad[F[_], ADT]: Monad[Sealed[F, *, ADT]] = new SealedMonad
+  implicit def sealedMonad[F[_], ADT]: Monad[Sealed[F, _, ADT]] = new SealedMonad
 }

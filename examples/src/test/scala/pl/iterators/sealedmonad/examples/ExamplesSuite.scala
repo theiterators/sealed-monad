@@ -1,14 +1,16 @@
 package pl.iterators.sealedmonad.examples
 
 import cats.Eq
-import cats.tests.CatsSuite
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Seconds, Span}
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatestplus.scalacheck.Checkers
+import org.typelevel.discipline.scalatest.FunSuiteDiscipline
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait ExamplesSuite extends CatsSuite with ScalaFutures {
+trait ExamplesSuite extends AnyFunSuite with FunSuiteDiscipline with Checkers with ScalaFutures {
   implicit final val executionContext: ExecutionContext      = ExecutionContext.global
   override implicit final val patienceConfig: PatienceConfig = super.patienceConfig.copy(timeout = scaled(Span(4, Seconds)))
 

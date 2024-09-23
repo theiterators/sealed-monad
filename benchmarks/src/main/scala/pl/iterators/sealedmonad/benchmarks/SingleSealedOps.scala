@@ -61,8 +61,8 @@ class SingleSealedOps {
   }
 
   @Benchmark
-  def attemptFBenchmark = Sealed.liftF(x).attemptF(attemptFWork).map(Ok).run
+  def attemptFBenchmark = Sealed.liftF(x).attemptF(attemptFWork).map(Ok.apply).run
 
   @Benchmark
-  def attemptFCatsBaseline = EitherT.rightT[Try, ADT](x).flatMapF(attemptFWork).map(Ok).value
+  def attemptFCatsBaseline = EitherT.rightT[Try, ADT](x).flatMapF(attemptFWork).map(Ok.apply).value
 }
