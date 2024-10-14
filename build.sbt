@@ -1,3 +1,5 @@
+import sbt.util
+
 val isScala3 = Def.setting(CrossVersion.partialVersion(scalaVersion.value).exists(_._1 != 2))
 
 // Dependencies
@@ -16,6 +18,13 @@ val supportedScalaVersions = Seq(scala_2_13, scala_3)
 
 ThisBuild / crossScalaVersions := supportedScalaVersions
 ThisBuild / scalaVersion       := mainScalaVersion
+
+ThisBuild / versionScheme                       := Some("early-semver")
+ThisBuild / githubWorkflowJavaVersions          := Seq(JavaSpec.temurin("8"), JavaSpec.temurin("17"))
+ThisBuild / githubWorkflowPublishTargetBranches := Seq(RefPredicate.StartsWith(Ref.Tag("v")), RefPredicate.Equals(Ref.Branch("master")))
+ThisBuild / tlBaseVersion                       := "1.4"
+ThisBuild / tlCiHeaderCheck                     := false
+ThisBuild / sonatypeCredentialHost              := xerial.sbt.Sonatype.sonatypeLegacy
 
 lazy val baseSettings = Seq(
 // Scala settings
@@ -51,7 +60,6 @@ lazy val baseSettings = Seq(
           Seq(compilerPlugin("org.typelevel" %% "kind-projector" % "0.13.3" cross CrossVersion.full))),
   scalafmtOnCompile := true,
 // Sonatype settings
-  sonatypeProfileName  := "pl.iterators",
   licenses             := Seq("Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0")),
   organization         := "pl.iterators",
   organizationName     := "Iterators",
@@ -137,7 +145,3 @@ lazy val sealedMonad = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     name        := "sealed-monad",
     description := "Scala library for nice for-comprehension-style error handling"
   )
-
-// lazy val root = project
-//   .in(file("."))
-//   .aggregate(sealedMonad.jvm, sealedMonad.js, sealedMonad.native, examples, docs, benchmarks)
