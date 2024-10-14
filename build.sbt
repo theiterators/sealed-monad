@@ -1,5 +1,3 @@
-import sbt.util
-
 val isScala3 = Def.setting(CrossVersion.partialVersion(scalaVersion.value).exists(_._1 != 2))
 
 // Dependencies
@@ -12,7 +10,7 @@ val disciplineVersion            = "2.3.0"
 // Multiple Scala versions support
 
 val scala_2_13             = "2.13.15"
-val scala_3                = "3.3.3"
+val scala_3                = "3.3.4"
 val mainScalaVersion       = scala_2_13
 val supportedScalaVersions = Seq(scala_2_13, scala_3)
 
