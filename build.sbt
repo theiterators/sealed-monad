@@ -94,8 +94,8 @@ lazy val noPublishSettings =
 lazy val examples = project
   .in(file("examples"))
   .dependsOn(sealedMonad.jvm % "test->test;compile->compile")
-  .settings(baseSettings: _*)
-  .settings(noPublishSettings: _*)
+  .settings(baseSettings *)
+  .settings(noPublishSettings *)
   .settings(
     name        := "examples",
     description := "Sealed monad - snippets of example code",
@@ -106,8 +106,8 @@ lazy val docs = project
   .in(file("sealed-docs"))
   .dependsOn(sealedMonad.jvm % "test->test;compile->compile")
   .enablePlugins(MdocPlugin, DocusaurusPlugin)
-  .settings(baseSettings: _*)
-  .settings(noPublishSettings: _*)
+  .settings(baseSettings *)
+  .settings(noPublishSettings *)
   .settings(
     name        := "docs",
     description := "Sealed monad documentation",
@@ -123,8 +123,8 @@ lazy val benchmarks = project
   .in(file("benchmarks"))
   .dependsOn(sealedMonad.jvm % "test->test;compile->compile")
   .enablePlugins(JmhPlugin)
-  .settings(baseSettings: _*)
-  .settings(noPublishSettings: _*)
+  .settings(baseSettings *)
+  .settings(noPublishSettings *)
   .settings(
     name        := "benchmarks",
     description := "Sealed monad benchmarks",
@@ -138,7 +138,7 @@ lazy val sealedMonad = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .in(file("sealedmonad"))
   .jsConfigure(_.disablePlugins(DoctestPlugin))
-  .settings(baseSettings: _*)
+  .settings(baseSettings *)
   .settings(
     name        := "sealed-monad",
     description := "Scala library for nice for-comprehension-style error handling"

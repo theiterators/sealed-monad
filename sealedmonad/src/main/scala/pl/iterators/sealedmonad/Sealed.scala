@@ -1,12 +1,12 @@
 package pl.iterators.sealedmonad
 
-import cats._
-import cats.syntax.all._
+import cats.*
+import cats.syntax.all.*
 
 import scala.Function.const
 
 sealed trait Sealed[F[_], +A, +ADT] {
-  import Sealed._
+  import Sealed.*
   def map[B](f: A => B): Sealed[F, B, ADT] = Transform(this, f.andThen(left[F, B, ADT]), right[F, B, ADT])
   def flatMap[B, ADT1 >: ADT](f: A => Sealed[F, B, ADT1]): Sealed[F, B, ADT1] = Transform(this, f, right[F, B, ADT1])
 
@@ -18,7 +18,7 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * Example:
     * {{{
     * scala> import pl.iterators.sealedmonad.Sealed
-    * scala> import pl.iterators.sealedmonad.syntax._
+    * scala> import pl.iterators.sealedmonad.syntax.*
     * scala> import cats.Id
     * scala> sealed trait Response
     * scala> case class Value(i: Int) extends Response
@@ -38,7 +38,7 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * Example:
     * {{{
     * scala> import pl.iterators.sealedmonad.Sealed
-    * scala> import pl.iterators.sealedmonad.syntax._
+    * scala> import pl.iterators.sealedmonad.syntax.*
     * scala> import cats.Id
     * scala> sealed trait Response
     * scala> case class Value(i: Int) extends Response
@@ -69,7 +69,7 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * Example:
     * {{{
     * scala> import pl.iterators.sealedmonad.Sealed
-    * scala> import pl.iterators.sealedmonad.syntax._
+    * scala> import pl.iterators.sealedmonad.syntax.*
     * scala> import cats.Id
     * scala> sealed trait Response
     * scala> case class Value(i: Int) extends Response
@@ -96,7 +96,7 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * Example:
     * {{{
     * scala> import pl.iterators.sealedmonad.Sealed
-    * scala> import pl.iterators.sealedmonad.syntax._
+    * scala> import pl.iterators.sealedmonad.syntax.*
     * scala> import cats.Id
     * scala> sealed trait Response
     * scala> case class Value(i: Int) extends Response
@@ -114,7 +114,7 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * Example:
     * {{{
     * scala> import pl.iterators.sealedmonad.Sealed
-    * scala> import pl.iterators.sealedmonad.syntax._
+    * scala> import pl.iterators.sealedmonad.syntax.*
     * scala> import cats.Id
     * scala> sealed trait Response
     * scala> case class Value(i: Int) extends Response
@@ -138,7 +138,7 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * Example:
     * {{{
     * scala> import pl.iterators.sealedmonad.Sealed
-    * scala> import pl.iterators.sealedmonad.syntax._
+    * scala> import pl.iterators.sealedmonad.syntax.*
     * scala> import cats.Id
     * scala> sealed trait Response
     * scala> case class Value(i: Int) extends Response
@@ -161,7 +161,7 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * Example:
     * {{{
     * scala> import pl.iterators.sealedmonad.Sealed
-    * scala> import pl.iterators.sealedmonad.syntax._
+    * scala> import pl.iterators.sealedmonad.syntax.*
     * scala> import cats.Id
     * scala> sealed trait Response
     * scala> case class Value(i: Int) extends Response
@@ -184,7 +184,7 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * Example:
     * {{{
     * scala> import pl.iterators.sealedmonad.Sealed
-    * scala> import pl.iterators.sealedmonad.syntax._
+    * scala> import pl.iterators.sealedmonad.syntax.*
     * scala> import cats.Id
     * scala> sealed trait Response
     * scala> case class Value(i: Int) extends Response
@@ -206,7 +206,7 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * Example:
     * {{{
     * scala> import pl.iterators.sealedmonad.Sealed
-    * scala> import pl.iterators.sealedmonad.syntax._
+    * scala> import pl.iterators.sealedmonad.syntax.*
     * scala> import cats.Id
     * scala> sealed trait Response
     * scala> case class Value(i: Int) extends Response
@@ -229,7 +229,7 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * Example:
     * {{{
     * scala> import pl.iterators.sealedmonad.Sealed
-    * scala> import pl.iterators.sealedmonad.syntax._
+    * scala> import pl.iterators.sealedmonad.syntax.*
     * scala> import cats.Id
     * scala> sealed trait Response
     * scala> case class Value(i: Int) extends Response
@@ -253,7 +253,7 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * Example:
     * {{{
     * scala> import pl.iterators.sealedmonad.Sealed
-    * scala> import pl.iterators.sealedmonad.syntax._
+    * scala> import pl.iterators.sealedmonad.syntax.*
     * scala> import cats.Eval
     * scala> sealed trait Response
     * scala> case class Value(i: Int) extends Response
@@ -277,7 +277,7 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * Example:
     * {{{
     * scala> import pl.iterators.sealedmonad.Sealed
-    * scala> import pl.iterators.sealedmonad.syntax._
+    * scala> import pl.iterators.sealedmonad.syntax.*
     * scala> import cats.Id
     * scala> sealed trait Response
     * scala> case class Value(i: Int) extends Response
@@ -296,7 +296,7 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * Example:
     * {{{
     * scala> import pl.iterators.sealedmonad.Sealed
-    * scala> import pl.iterators.sealedmonad.syntax._
+    * scala> import pl.iterators.sealedmonad.syntax.*
     * scala> import cats.Id
     * scala> sealed trait Response
     * scala> case class Value(i: Int) extends Response
@@ -314,7 +314,7 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * Example:
     * {{{
     * scala> import pl.iterators.sealedmonad.Sealed
-    * scala> import pl.iterators.sealedmonad.syntax._
+    * scala> import pl.iterators.sealedmonad.syntax.*
     * scala> import cats.Id
     * scala> sealed trait Response
     * scala> case class Value(i: Int) extends Response
@@ -332,7 +332,7 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * Example:
     * {{{
     * scala> import pl.iterators.sealedmonad.Sealed
-    * scala> import pl.iterators.sealedmonad.syntax._
+    * scala> import pl.iterators.sealedmonad.syntax.*
     * scala> import cats.Id
     * scala> sealed trait Response
     * scala> case class Value(i: Int) extends Response
@@ -356,7 +356,7 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * Example:
     * {{{
     * scala> import pl.iterators.sealedmonad.Sealed
-    * scala> import pl.iterators.sealedmonad.syntax._
+    * scala> import pl.iterators.sealedmonad.syntax.*
     * scala> import cats.Id
     * scala> sealed trait Response
     * scala> case class Value(i: Int) extends Response
@@ -380,7 +380,7 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * Example:
     * {{{
     * scala> import pl.iterators.sealedmonad.Sealed
-    * scala> import pl.iterators.sealedmonad.syntax._
+    * scala> import pl.iterators.sealedmonad.syntax.*
     * scala> import cats.Id
     * scala> sealed trait Response
     * scala> case class Value(i: Int) extends Response
@@ -402,7 +402,7 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * Example:
     * {{{
     * scala> import pl.iterators.sealedmonad.Sealed
-    * scala> import pl.iterators.sealedmonad.syntax._
+    * scala> import pl.iterators.sealedmonad.syntax.*
     * scala> import cats.Id
     * scala> sealed trait Response
     * scala> case class Value(i: Int) extends Response
@@ -424,7 +424,7 @@ sealed trait Sealed[F[_], +A, +ADT] {
     * Example:
     * {{{
     * scala> import pl.iterators.sealedmonad.Sealed
-    * scala> import pl.iterators.sealedmonad.syntax._
+    * scala> import pl.iterators.sealedmonad.syntax.*
     * scala> import cats.Id
     * scala> sealed trait Response
     * scala> case class Value(i: Int) extends Response
@@ -450,7 +450,7 @@ sealed trait Sealed[F[_], +A, +ADT] {
 
 object Sealed extends SealedInstances {
 
-  import cats.syntax.either._
+  import cats.syntax.either.*
 
   def apply[F[_], A](value: => F[A]): Sealed[F, A, Nothing] = defer(leftF(value))
   def liftF[F[_], A](value: A): Sealed[F, A, Nothing]       = defer(left(value))
@@ -463,6 +463,19 @@ object Sealed extends SealedInstances {
     case Some(a) => left(a)
     case None    => right(orElse)
   }
+
+  /** Shorthand for F.pure(()).seal
+    *
+    * Example:
+    * {{{
+    * scala> import pl.iterators.sealedmonad.Sealed
+    * scala> import pl.iterators.sealedmonad.syntax.*
+    * scala> import cats.Id
+    * scala> Sealed.unit[Id] == Id.pure(()).seal
+    * res0: true
+    * }}}
+    */
+  def unit[F[_]]: Sealed[F, Unit, Nothing] = liftF(())
 
   def valueOrF[F[_], A, ADT](fa: => F[Option[A]], orElse: => F[ADT]): Sealed[F, A, ADT] =
     apply(fa).flatMap {

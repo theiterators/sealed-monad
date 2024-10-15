@@ -1,7 +1,7 @@
 package pl.iterators.sealedmonad.side_effects
 
 import cats.Eval
-import pl.iterators.sealedmonad.syntax._
+import pl.iterators.sealedmonad.syntax.*
 
 trait SealedSideEffectsInspectF {
 
