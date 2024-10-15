@@ -540,15 +540,15 @@ object Sealed extends SealedInstances {
                 next,
                 (a0: Any) =>
                   Transform[F, Any, A, Any, ADT](
-                    defer(onA0.asInstanceOf[Any => Sealed[F, A, ADT]](a0)),
-                    onA.asInstanceOf[Any => Sealed[F, A, ADT]],
-                    onADT.asInstanceOf[Any => Sealed[F, A, ADT]]
+                    defer(onA0(a0)),
+                    onA,
+                    onADT
                   ),
                 (adt0: Any) =>
                   Transform[F, Any, A, Any, ADT](
-                    defer(onADT0.asInstanceOf[Any => Sealed[F, Any, Any]](adt0)),
-                    onA.asInstanceOf[Any => Sealed[F, A, ADT]],
-                    onADT.asInstanceOf[Any => Sealed[F, A, ADT]]
+                    defer(onADT0(adt0)),
+                    onA,
+                    onADT
                   )
               )
             )
