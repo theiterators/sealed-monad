@@ -2,8 +2,8 @@ package pl.iterators.sealedmonad.examples
 
 import cats.Monad
 import cats.data.{EitherT, OptionT}
-import cats.syntax.flatMap._
-import cats.syntax.functor._
+import cats.syntax.flatMap.*
+import cats.syntax.functor.*
 import pl.iterators.sealedmonad.Sealed
 
 import scala.language.higherKinds
@@ -11,7 +11,7 @@ import scala.language.higherKinds
 object Options {
 
   object Example1 {
-    import pl.iterators.sealedmonad.syntax._
+    import pl.iterators.sealedmonad.syntax.*
 
     def login[M[_]](
         email: String,
@@ -63,7 +63,7 @@ object Options {
   }
 
   object Example2 {
-    import pl.iterators.sealedmonad.syntax._
+    import pl.iterators.sealedmonad.syntax.*
 
     def confirmEmail[M[_]: Monad](
         token: String,
@@ -100,7 +100,7 @@ object Options {
     }
 
     class Example3[M[_]: Monad] {
-      import pl.iterators.sealedmonad.syntax._
+      import pl.iterators.sealedmonad.syntax.*
 
       def sealedLogin(email: String): M[LoginResponse] =
         (for {

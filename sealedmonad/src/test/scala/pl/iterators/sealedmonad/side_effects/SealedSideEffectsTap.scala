@@ -1,7 +1,7 @@
 package pl.iterators.sealedmonad.side_effects
 
 import cats.Id
-import pl.iterators.sealedmonad.syntax._
+import pl.iterators.sealedmonad.syntax.*
 
 trait SealedSideEffectsTap {
 

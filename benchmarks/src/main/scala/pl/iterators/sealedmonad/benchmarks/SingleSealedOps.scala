@@ -5,11 +5,11 @@ import java.util.concurrent.TimeUnit
 import cats.Monad
 import cats.data.EitherT
 import cats.instances.TryInstances
-import org.openjdk.jmh.annotations._
+import org.openjdk.jmh.annotations.*
 import org.openjdk.jmh.infra.Blackhole
 import pl.iterators.sealedmonad.Sealed
 
-import scala.util._
+import scala.util.*
 
 object SingleSealedOps extends TryInstances {
   sealed trait ADT
@@ -28,7 +28,7 @@ object SingleSealedOps extends TryInstances {
 @Measurement(iterations = 20, time = 1, timeUnit = TimeUnit.SECONDS)
 @Fork(1)
 class SingleSealedOps {
-  import SingleSealedOps._
+  import SingleSealedOps.*
 
   @Param(Array("0", "2", "4", "8", "16", "32", "64", "128"))
   var tokens: Int = _

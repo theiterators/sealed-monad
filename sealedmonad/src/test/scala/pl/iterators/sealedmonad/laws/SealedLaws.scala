@@ -1,7 +1,7 @@
 package pl.iterators.sealedmonad.laws
 
 import cats.Monad
-import cats.kernel.laws._
+import cats.kernel.laws.*
 import pl.iterators.sealedmonad.Sealed
 import pl.iterators.sealedmonad.SealedTestInstances.ADT
 
@@ -10,9 +10,9 @@ import scala.language.higherKinds
 trait SealedLaws[F[_]] {
   implicit def M: Monad[F]
 
-  import cats.syntax.either._
-  import cats.syntax.flatMap._
-  import cats.syntax.functor._
+  import cats.syntax.either.*
+  import cats.syntax.flatMap.*
+  import cats.syntax.functor.*
 
   def valueMapReduction[A, B](fa: F[A], f: A => B) = Sealed(fa).map(f) <-> Sealed(fa.map(f))
 
