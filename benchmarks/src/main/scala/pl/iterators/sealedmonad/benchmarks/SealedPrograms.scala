@@ -4,13 +4,13 @@ import java.util.concurrent.TimeUnit
 
 import cats.Monad
 import cats.data.{EitherT, OptionT}
-import org.openjdk.jmh.annotations._
+import org.openjdk.jmh.annotations.*
 import org.openjdk.jmh.infra.Blackhole
 
 import scala.util.{Random, Try}
 
 object SealedPrograms {
-  import cats.instances.try_._
+  import cats.instances.try_.*
 
   type M[A] = Try[A]
   implicit val M: Monad[Try] = Monad[Try]
@@ -30,8 +30,8 @@ object SealedPrograms {
 @Fork(1)
 class SealedPrograms {
 
-  import SealedPrograms._
-  import pl.iterators.sealedmonad.syntax._
+  import SealedPrograms.*
+  import pl.iterators.sealedmonad.syntax.*
 
   private val tokens = 1024
 

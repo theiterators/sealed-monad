@@ -2,7 +2,7 @@ package pl.iterators.sealedmonad.examples
 
 import cats.{Eq, Monad}
 import org.scalacheck.{Arbitrary, Cogen}
-import Options._
+import Options.*
 import org.typelevel.discipline.Laws
 import org.scalacheck.Prop
 

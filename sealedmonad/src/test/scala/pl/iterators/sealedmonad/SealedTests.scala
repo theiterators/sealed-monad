@@ -1,7 +1,7 @@
 package pl.iterators.sealedmonad
 
 import cats.{Eq, Monad}
-import org.scalacheck.Prop._
+import org.scalacheck.Prop.*
 import org.scalacheck.{Arbitrary, Cogen}
 import org.typelevel.discipline.Laws
 import pl.iterators.sealedmonad.laws.SealedLaws
@@ -13,7 +13,7 @@ trait SealedTests[F[_]] extends Laws with SealedTestInstances {
   def laws: SealedLaws[F]
 
   import SealedTestInstances.ADT
-  import cats.kernel.laws.discipline._
+  import cats.kernel.laws.discipline.*
 
   def tests[A, B, C](implicit
       ArbA: Arbitrary[A],

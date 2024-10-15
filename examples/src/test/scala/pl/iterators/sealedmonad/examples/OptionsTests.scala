@@ -1,19 +1,19 @@
 package pl.iterators.sealedmonad.examples
 
 import cats.{Eq, Monad}
-import org.scalacheck.Prop._
-import org.scalacheck._
+import org.scalacheck.Prop.*
+import org.scalacheck.*
 import org.typelevel.discipline.Laws
-import pl.iterators.sealedmonad.examples.Options._
-import pl.iterators.sealedmonad.examples.Options._
+import pl.iterators.sealedmonad.examples.Options.*
+import pl.iterators.sealedmonad.examples.Options.*
 
 import scala.language.higherKinds
 
 trait OptionsTests[M[_]] extends Laws {
   implicit def M: Monad[M]
 
-  import cats.kernel.laws._
-  import discipline._
+  import cats.kernel.laws.*
+  import discipline.*
 
   def loginEqv(
       email: String,
