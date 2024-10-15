@@ -534,7 +534,6 @@ object Sealed extends SealedInstances {
           case Suspend(Right(fadt))          => fadt.flatMap(adt => recur(Transform(Pure(Right(adt)), onA, onADT)))
           case Defer(value)                  => recur(Transform(value(), onA, onADT))
           case Transform(next, onA0, onADT0) =>
-            // the asInstanceOf below are for cross Scala 2/3 compatibility and can be avoided when src code would be split
             recur(
               Transform[F, Any, A, Any, ADT](
                 next,
