@@ -143,3 +143,6 @@ lazy val sealedMonad = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     name        := "sealed-monad",
     description := "Scala library for nice for-comprehension-style error handling"
   )
+
+lazy val root = tlCrossRootProject.aggregate(sealedMonad, benchmarks, docs, examples)
+  .settings(baseSettings *)
