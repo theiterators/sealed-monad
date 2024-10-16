@@ -10,7 +10,7 @@ val disciplineVersion            = "2.3.0"
 // Multiple Scala versions support
 
 val scala_2_13             = "2.13.15"
-val scala_3                = "3.3.4"
+val scala_3                = "3.5.2"
 val mainScalaVersion       = scala_2_13
 val supportedScalaVersions = Seq(scala_2_13, scala_3)
 
@@ -144,5 +144,6 @@ lazy val sealedMonad = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     description := "Scala library for nice for-comprehension-style error handling"
   )
 
-lazy val root = tlCrossRootProject.aggregate(sealedMonad, benchmarks, docs, examples)
+lazy val root = tlCrossRootProject
+  .aggregate(sealedMonad, benchmarks, docs, examples)
   .settings(baseSettings *)
