@@ -87,7 +87,7 @@ class SealedPrograms {
   def benchmark2 = {
     val s = for {
       m <- returnOption.valueOr(SomeCase)
-      _ <- doSomeOtherWork(m).valueOr(SomeOtherCase) >>! (s => M.pure(m + s.toInt))
+      _ <- doSomeOtherWork(m).valueOr(SomeOtherCase).flatTap(s => M.pure(m + s.toInt))
     } yield Result(m)
 
     s.run
