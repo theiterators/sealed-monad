@@ -62,14 +62,15 @@ trait SealedTests[F[_]] extends Laws with SealedTestInstances {
       "ensureOrF consistent with ensureF"                                       -> forAll(laws.ensureOrFEnsureFCoherence[A, ADT] _),
       "ensureOrF true identity"                                                 -> forAll(laws.ensureOrFTrueIdentity[A, ADT] _),
       "ensureOrF false consistent with completeWith"                            -> forAll(laws.ensureOrFFalseIdentity[A, ADT] _),
+      "ensureNotOrF true identity"                                              -> forAll(laws.ensureNotOrFTrueIdentity[A, ADT] _),
+      "ensureNotOrF false consistent with completeWith"                         -> forAll(laws.ensureNotOrFFalseIdentity[A, ADT] _),
       "either identity"                                                         -> forAll(laws.eitherIdentity[A, ADT] _),
       "foldM consistent with flatMap"                                           -> forAll(laws.foldMCoherentWithFlatMap[A, ADT] _),
       "inspect does not change instance"                                        -> forAll(laws.inspectElimination[A, B, ADT] _),
       "valueOr"                                                                 -> forAll(laws.valueOrIdentity[A, ADT] _),
       "handleError"                                                             -> forAll(laws.handleErrorIdentity[A, B, ADT] _),
-      "biMap"                                                                   -> forAll(laws.bimapIdentity[A, B, ADT, C] _),
-      "semiflatMap stack-safety"                                                -> lzy(laws.semiflatMapStackSafety)
-      // "map stack-safety" -> lzy(laws.computationMapStackSafety)
+      "semiflatMap stack-safety"                                                -> lzy(laws.semiflatMapStackSafety),
+      "map stack-safety"                                                        -> lzy(laws.computationMapStackSafety)
     )
 }
 

@@ -93,7 +93,9 @@ object Options {
     ): M[ConfirmResponse] = {
       val s = for {
         method <- findAuthMethod(token).valueOr[ConfirmResponse](ConfirmResponse.MethodNotFound)
-        user   <- findUser(method.userId).valueOr[ConfirmResponse](ConfirmResponse.UserNotFound) ! upsertAuthMethod(confirmMethod(method))
+        user <- findUser(method.userId)
+          .valueOr[ConfirmResponse](ConfirmResponse.UserNotFound)
+          .flatTap(_ => upsertAuthMethod(confirmMethod(method)))
       } yield ConfirmResponse.Confirmed(issueTokenFor(user))
 
       s.run

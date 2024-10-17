@@ -55,6 +55,9 @@ trait SealedLaws[F[_]] {
   def ensureOrFTrueIdentity[A, B](s: Sealed[F, A, B], b: A => F[B])  = s.ensureOrF(_ => true, b) <-> s
   def ensureOrFFalseIdentity[A, B](s: Sealed[F, A, B], b: A => F[B]) = s.ensureOrF(_ => false, b) <-> s.completeWith(b)
 
+  def ensureNotOrFTrueIdentity[A, B](s: Sealed[F, A, B], b: A => F[B])  = s.ensureNotOrF(_ => true, b) <-> s.completeWith(b)
+  def ensureNotOrFFalseIdentity[A, B](s: Sealed[F, A, B], b: A => F[B]) = s.ensureNotOrF(_ => false, b) <-> s
+
   def foldMCoherentWithFlatMap[A, B](fa: F[Option[A]], b: B) =
     Sealed(fa).attempt(Either.fromOption(_, b)).foldM[Int, B](_ => Sealed.liftF(0), _ => Sealed.liftF(1)) <-> Sealed(fa).flatMap {
       case None => Sealed.liftF(0)
@@ -82,9 +85,6 @@ trait SealedLaws[F[_]] {
 
   def handleErrorIdentity[A, B, C](fab: F[Either[A, B]], f: A => C) =
     Sealed.handleError(fab)(f) <-> Sealed(fab).attempt(_.leftMap(f))
-
-  def bimapIdentity[A, B, C, D](fab: F[Either[A, B]], f: A => C, fb: B => D) =
-    Sealed.bimap(fab)(f)(fb) <-> Sealed(fab).attempt(_.leftMap(f).map(fb))
 
   lazy val semiflatMapStackSafety = {
     val n = 50000

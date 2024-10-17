@@ -93,7 +93,7 @@ lazy val noPublishSettings =
 
 lazy val examples = project
   .in(file("examples"))
-  .dependsOn(sealedMonad.jvm % "test->test;compile->compile")
+  .dependsOn(core.jvm % "test->test;compile->compile")
   .settings(baseSettings *)
   .settings(noPublishSettings *)
   .settings(
@@ -104,7 +104,7 @@ lazy val examples = project
 
 lazy val docs = project
   .in(file("sealed-docs"))
-  .dependsOn(sealedMonad.jvm % "test->test;compile->compile")
+  .dependsOn(core.jvm % "test->test;compile->compile")
   .enablePlugins(MdocPlugin, DocusaurusPlugin)
   .settings(baseSettings *)
   .settings(noPublishSettings *)
@@ -121,7 +121,7 @@ lazy val docs = project
 
 lazy val benchmarks = project
   .in(file("benchmarks"))
-  .dependsOn(sealedMonad.jvm % "test->test;compile->compile")
+  .dependsOn(core.jvm % "test->test;compile->compile")
   .enablePlugins(JmhPlugin)
   .settings(baseSettings *)
   .settings(noPublishSettings *)
@@ -133,7 +133,7 @@ lazy val benchmarks = project
 
 addCommandAlias("flame", "benchmarks/jmh:run -p tokens=64 -prof jmh.extras.Async:dir=target/flamegraphs;flameGraphOpts=--width,1900")
 
-lazy val sealedMonad = crossProject(JSPlatform, JVMPlatform, NativePlatform)
+lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("sealedmonad"))
@@ -144,5 +144,6 @@ lazy val sealedMonad = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     description := "Scala library for nice for-comprehension-style error handling"
   )
 
-lazy val root = tlCrossRootProject.aggregate(sealedMonad, benchmarks, docs, examples)
+lazy val sealedMonad = tlCrossRootProject
+  .aggregate(core, benchmarks, docs, examples)
   .settings(baseSettings *)
