@@ -13,7 +13,7 @@ Or in more technical terms, think of EitherT on steroids, with more human-readab
 Add the following to your `build.sbt`:
 
 ```scala
-libraryDependencies += "pl.iterators" %% "sealed-monad" % "1.3.0"
+libraryDependencies += "pl.iterators" %% "sealed-monad" % "2.0.0"
 ```
 
 Available for Scala 2.13.x and 3.x in JVM, ScalaNative and Scala.js flavours.
