@@ -16,7 +16,7 @@ Add the following to your `build.sbt`:
 libraryDependencies += "pl.iterators" %% "sealed-monad" % "1.3.0"
 ```
 
-Available for Scala 2.12.x, 2.13.x and 3.x.
+Available for Scala 2.13.x and 3.x in JVM, ScalaNative and Scala.js flavours.
 
 ## Usage
 
