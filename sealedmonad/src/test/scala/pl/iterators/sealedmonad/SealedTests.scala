@@ -69,8 +69,8 @@ trait SealedTests[F[_]] extends Laws with SealedTestInstances {
       "inspect does not change instance"                                        -> forAll(laws.inspectElimination[A, B, ADT] _),
       "valueOr"                                                                 -> forAll(laws.valueOrIdentity[A, ADT] _),
       "handleError"                                                             -> forAll(laws.handleErrorIdentity[A, B, ADT] _),
-      "semiflatMap stack-safety"                                                -> lzy(laws.semiflatMapStackSafety)
-      // "map stack-safety" -> lzy(laws.computationMapStackSafety)
+      "semiflatMap stack-safety"                                                -> lzy(laws.semiflatMapStackSafety),
+      "map stack-safety"                                                        -> lzy(laws.computationMapStackSafety)
     )
 }
 
