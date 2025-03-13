@@ -16,6 +16,10 @@
   --ifm-code-font-size: 95%;
 }
 
+.margin-left--md {
+  margin-left: 1rem;
+}
+
 .docusaurus-highlight-code-line {
   background-color: rgba(0, 0, 0, 0.1);
   display: block;

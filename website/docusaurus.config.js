@@ -7,14 +7,14 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 const projectTitle = 'sealed-monad';
 const organizationName = 'theiterators';
 const editDocsUrl = 'https://github.com/theiterators/sealed-monad/tree/master/docs/';
-const docsPath = '../sealed-docs/target/mdoc';
+const docsPath = '../docs';
 const navbarTitle = 'sealed-monad';
 const projectGitHubUrl = 'https://github.com/theiterators/sealed-monad';
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: projectTitle,
-  tagline: 'Scala library for business logic oriented, for-comprehension-style error handling',
+  tagline: 'Scala library for elegant, business logic-oriented error handling with clean, linear code flow',
   url: 'https://theiterators.github.io/sealed-monad/',
   baseUrl: '/sealed-monad/',
   onBrokenLinks: 'throw',

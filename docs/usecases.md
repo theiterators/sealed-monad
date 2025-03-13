@@ -1,3 +1,7 @@
+---
+sidebar_position: 3
+---
+
 # Practical Use Cases
 
 Sealed Monad shines in real-world business logic scenarios. This section demonstrates practical examples comparing traditional approaches to using Sealed Monad, illustrating how it improves readability and maintainability.

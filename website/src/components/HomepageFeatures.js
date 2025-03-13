@@ -4,32 +4,32 @@ import styles from './HomepageFeatures.module.css';
 
 const FeatureList = [
   {
-    title: 'Easy to read and write',
+    title: 'Linear Code Flow',
     img: "img/easy_to_read_write.png",
     alt: "image of keyboard and monitor",
     description: (
       <>
-        Focused on using for-comprehension syntax rather than composing combinators.
+        Write top-down, sequential code that's easy to follow. Focused on using for-comprehension syntax rather than composing combinators.
       </>
     )
   },
   {
-    title: 'Flexible',
+    title: 'Business-Logic Focused',
     img: "img/flexible.png",
     alt: "image of cog wheel",
     description: (
       <>
-        Preserves locality. Works with any monad and programming style.
+        Error handling that focuses on representing business outcomes, not technical errors. Preserves locality and works with any monad.
       </>
     ),
   },
   {
-    title: 'ADT-driven',
+    title: 'ADT-Driven Design',
     img: "img/driven.png",
     alt: "image of a wheel, wrench and a cogwheel",
     description: (
       <>
-        Built with representing precisely modeled data in mind.
+        Naturally works with sealed trait hierarchies to model operation results. Perfect for API responses with multiple possible outcomes.
       </>
     ),
   },

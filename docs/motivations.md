@@ -1,3 +1,7 @@
+---
+sidebar_position: 2
+---
+
 # Motivations & Core Concepts
 
 ## Why We Created Sealed Monad
