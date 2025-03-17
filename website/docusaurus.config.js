@@ -7,7 +7,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 const projectTitle = 'sealed-monad';
 const organizationName = 'theiterators';
 const editDocsUrl = 'https://github.com/theiterators/sealed-monad/tree/master/docs/';
-const docsPath = '../sealed-docs/target/mdoc';
+const docsPath = '../docs';
 const navbarTitle = 'sealed-monad';
 const projectGitHubUrl = 'https://github.com/theiterators/sealed-monad';
 
@@ -15,7 +15,7 @@ const projectGitHubUrl = 'https://github.com/theiterators/sealed-monad';
 const config = {
   title: projectTitle,
   tagline: 'Scala library for business logic oriented, for-comprehension-style error handling',
-  url: 'https://theiterators.github.io/sealed-monad/',
+  url: 'https://theiterators.github.io',
   baseUrl: '/sealed-monad/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
@@ -33,10 +33,12 @@ const config = {
           path: docsPath,
           // Please change this to your repo.
           editUrl: editDocsUrl,
+          routeBasePath: '/', // Set docs as the root
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
         },
+        blog: false, // Disable blog
       }),
     ],
   ],
@@ -50,12 +52,6 @@ const config = {
           src: 'img/favicon.ico',
         },
         items: [
-          {
-            type: 'doc',
-            docId: 'intro',
-            position: 'left',
-            label: 'Documentation',
-          },
           {
             href: projectGitHubUrl,
             label: 'GitHub',
@@ -71,7 +67,7 @@ const config = {
             items: [
               {
                 label: 'Introduction',
-                to: '/docs/intro',
+                to: '/',
               },
             ],
           },

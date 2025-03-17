@@ -1,4 +1,8 @@
-# Conclusion
+---
+id: conclusion
+title: Conclusion
+slug: /conclusion
+---
 
 Thank you for exploring the Sealed Monad documentation. Throughout this guide, we've covered the fundamental concepts, installation procedures, core features, advanced techniques, and best practices for using Sealed Monad in your Scala applications.
 

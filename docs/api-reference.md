@@ -1,4 +1,8 @@
-# Sealed Monad Documentation
+---
+id: api-reference
+title: API Reference
+slug: /api-reference
+---
 
 The Sealed Monad is a Scala library designed to simplify business‐logic error handling using for–comprehensions. It combines the benefits of monadic error handling with the clarity of using ADTs (algebraic data types) to signal error conditions. In this documentation the core operations are explained with code examples extracted from the source.
 

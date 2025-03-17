@@ -1,4 +1,8 @@
-# Advanced Features of Sealed Monad
+---
+id: advanced-features
+title: Advanced Features
+slug: /advanced-features
+---
 
 This document provides a comprehensive guide to the advanced features of the Sealed Monad library. Sealed Monad is a powerful, business-oriented abstraction for elegant error handling and control flow in Scala. In this guide, we elaborate on techniques for composing nested operations, integrating with other monadic structures, debugging, performance optimization, and advanced use cases. Concrete Scala code examples illustrate each feature in a real-world context.
 

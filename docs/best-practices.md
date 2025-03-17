@@ -1,4 +1,8 @@
-# Sealed Monad Best Practices
+---
+id: best-practices
+title: Best Practices
+slug: /best-practices
+---
 
 This document gathers best practices for leveraging the Sealed Monad pattern in your Scala applications. It includes concrete examples extracted from real-world code, guidelines for error modeling and side effect management, and recommendations for writing testable and composable logic. By following these guidelines, you’ll create domain‐rich, type‐safe code that communicates intent clearly and minimizes runtime surprises.
 

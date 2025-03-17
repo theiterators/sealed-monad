@@ -1,6 +1,8 @@
-# Installation
-
-# Sealed Monad Installation Guide
+---
+id: installation
+title: Installation Guide
+slug: /installation
+---
 
 ## Overview
 

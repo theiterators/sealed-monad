@@ -1,3 +1,9 @@
+---
+id: intro
+title: Introduction
+slug: /
+---
+
 # Introduction to Sealed Monad
 
 ## What is Sealed Monad?
@@ -66,6 +72,12 @@ Sealed Monad is particularly useful in scenarios where:
 
 ## Getting Started
 
-To start using Sealed Monad in your Scala projects, check out the [Installation Guide](https://theiterators.github.io/sealed-monad/docs/installation) and [Core Concepts](https://theiterators.github.io/sealed-monad/docs/core-concepts) documentation.
+To start using Sealed Monad in your Scala projects, check out the [Installation Guide](installation) and [Core Concepts](core-concepts) documentation.
 
-## Introduction
+## Further Reading
+
+These blog posts provide additional context on why structured error handling and clean design matter:
+
+- [Code Complexity Metrics: Writing Clean, Maintainable Software](https://www.iteratorshq.com/blog/code-complexity-metrics-writing-clean-maintainable-software/) - Learn about code complexity
+- [Achieving Data Integrity: Data Validation & Enforcing Constraints](https://www.iteratorshq.com/blog/achieving-data-integrity-data-validation-enforcing-constraints/) - Discover how to enforce data integrity
+- [Building Bulletproof Software by Using Error Handling](https://www.iteratorshq.com/blog/building-bulletproof-software-by-using-error-handling/) - Understand proper error handling

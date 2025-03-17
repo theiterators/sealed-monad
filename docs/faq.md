@@ -1,4 +1,8 @@
-# Sealed Monad FAQ Documentation
+---
+id: faq
+title: FAQ
+slug: /faq
+---
 
 This document provides a comprehensive FAQ on Sealed Monad, a Scala library that enables human‐readable, for–comprehension–style error handling. The FAQ is enriched with concrete Scala code examples drawn from our repository to illustrate common usage patterns and best practices.
 

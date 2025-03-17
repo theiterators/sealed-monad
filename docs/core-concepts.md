@@ -1,4 +1,8 @@
-# Sealed Monad: Core Concepts
+---
+id: core-concepts
+title: Core Concepts
+slug: /core-concepts
+---
 
 Sealed Monad is a Scala library designed for business-oriented error handling using a concise for-comprehension style. It extends and improves upon traditional monads such as EitherT, offering a human‐readable API with controlled error handling tailored to business logic domains.
 
@@ -252,4 +256,3 @@ Sealed Monad offers an expressive and type-safe way to handle business logic err
 Integrate Sealed Monad into your Scala projects to produce clear, maintainable, and error-safe business logic!
 
 Happy coding!
-
