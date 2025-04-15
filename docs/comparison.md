@@ -1,45 +1,69 @@
 ---
-sidebar_position: 6
+id: comparison
+title: Comparison with Other Approaches
+slug: /comparison
 ---
 
 # Comparison with Other Approaches
 
 Sealed Monad offers a distinctive approach to error handling in Scala. This page compares it with other common error handling techniques to help you understand where it fits in the ecosystem.
 
-## Traditional Approaches to Error Handling
+## The Example: User Authentication
 
-Let's implement the same example with different error handling approaches to see how they compare.
+To provide a fair comparison, we'll implement the same example with different error handling approaches. Our example involves user authentication with the following requirements:
 
-### The Example: User Authentication
-
-We'll use a user authentication scenario that needs to:
 1. Find a user by email
 2. Check if the user's account is active (not archived)
 3. Verify the authentication method
 4. Generate a token or handle the appropriate error case
 
-## Approach 1: Pattern Matching with Options/Either
+First, let's define our domain models and result type:
+
+```scala
+import scala.concurrent.Future
+import cats.Monad
+import cats.effect.IO
+
+// Domain models
+case class User(id: Long, email: String, archived: Boolean)
+case class AuthMethod(userId: Long, provider: String)
+
+// Result ADT
+sealed trait LoginResponse
+object LoginResponse {
+  final case class LoggedIn(token: String) extends LoginResponse
+  case object InvalidCredentials extends LoginResponse
+  case object Deleted extends LoginResponse
+  case object ProviderAuthFailed extends LoginResponse
+}
+```
+
+## Approach 1: Pattern Matching with Options
+
+This is perhaps the most common approach in Scala applications:
 
 ```scala
 def login(
   email: String,
   findUser: String => Future[Option[User]],
-  findAuthMethod: (Long, Provider) => Future[Option[AuthMethod]],
+  findAuthMethod: (Long, String) => Future[Option[AuthMethod]],
   checkAuthMethod: AuthMethod => Boolean,
   issueTokenFor: User => String
 ): Future[LoginResponse] = {
+  import scala.concurrent.ExecutionContext.Implicits.global
+  
   findUser(email).flatMap {
     case None => 
       Future.successful(LoginResponse.InvalidCredentials)
     case Some(user) if user.archived => 
       Future.successful(LoginResponse.Deleted)
     case Some(user) => 
-      findAuthMethod(user.id, defaultProvider).flatMap {
+      findAuthMethod(user.id, "email").flatMap {
         case None => 
           Future.successful(LoginResponse.ProviderAuthFailed)
         case Some(authMethod) if !checkAuthMethod(authMethod) => 
           Future.successful(LoginResponse.InvalidCredentials)
-        case Some(authMethod) => 
+        case Some(_) => 
           Future.successful(LoginResponse.LoggedIn(issueTokenFor(user)))
       }
   }
@@ -60,17 +84,23 @@ def login(
 
 ## Approach 2: Using Cats' EitherT
 
+EitherT is a monad transformer that combines the Either monad with an arbitrary monad, allowing for composing operations that can return either success or error values:
+
 ```scala
+import cats.data.EitherT
+import cats.implicits._
+
 def login(
   email: String,
   findUser: String => Future[Option[User]],
-  findAuthMethod: (Long, Provider) => Future[Option[AuthMethod]],
+  findAuthMethod: (Long, String) => Future[Option[AuthMethod]],
   checkAuthMethod: AuthMethod => Boolean,
   issueTokenFor: User => String
 ): Future[LoginResponse] = {
+  import scala.concurrent.ExecutionContext.Implicits.global
   
   // Start with user lookup
-  val result = for {
+  (for {
     user <- EitherT.fromOptionF(
       findUser(email),
       LoginResponse.InvalidCredentials: LoginResponse
@@ -85,7 +115,7 @@ def login(
     
     // Get auth method
     authMethod <- EitherT.fromOptionF(
-      findAuthMethod(user.id, defaultProvider), 
+      findAuthMethod(user.id, "email"), 
       LoginResponse.ProviderAuthFailed: LoginResponse
     )
     
@@ -98,9 +128,7 @@ def login(
     
     // Create success response
     response = LoginResponse.LoggedIn(issueTokenFor(user))
-  } yield response
-  
-  result.value.map(_.merge)
+  } yield response).merge
 }
 ```
 
@@ -118,14 +146,19 @@ def login(
 
 ## Approach 3: Using Sealed Monad
 
+Now let's implement the same logic using Sealed Monad:
+
 ```scala
+import pl.iterators.sealedmonad.syntax._
+
 def login(
   email: String,
   findUser: String => Future[Option[User]],
-  findAuthMethod: (Long, Provider) => Future[Option[AuthMethod]],
+  findAuthMethod: (Long, String) => Future[Option[AuthMethod]],
   checkAuthMethod: AuthMethod => Boolean,
   issueTokenFor: User => String
 ): Future[LoginResponse] = {
+  import scala.concurrent.ExecutionContext.Implicits.global
   
   (for {
     // Get user or return InvalidCredentials
@@ -134,7 +167,7 @@ def login(
       .ensure(!_.archived, LoginResponse.Deleted)
     
     // Get auth method or return ProviderAuthFailed
-    authMethod <- findAuthMethod(user.id, defaultProvider)
+    authMethod <- findAuthMethod(user.id, "email")
       .valueOr[LoginResponse](LoginResponse.ProviderAuthFailed)
       .ensure(checkAuthMethod, LoginResponse.InvalidCredentials)
   } yield LoginResponse.LoggedIn(issueTokenFor(user))).run
@@ -153,64 +186,57 @@ def login(
 - Requires learning a library-specific API
 - Introduced extra abstraction that needs to be understood
 
-## Approach 4: ZIO with custom error types
+## Approach 4: Using ZIO
+
+ZIO offers powerful error handling with a distinct approach:
 
 ```scala
-sealed trait LoginError
-object LoginError {
-  case object UserNotFound extends LoginError
-  case object AccountDeleted extends LoginError
-  case object AuthMethodNotFound extends LoginError
-  case object InvalidAuthMethod extends LoginError
-}
+import zio._
 
 def login(
   email: String,
-  findUser: String => ZIO[Any, Nothing, Option[User]],
-  findAuthMethod: (Long, Provider) => ZIO[Any, Nothing, Option[AuthMethod]],
+  findUser: String => Task[Option[User]],
+  findAuthMethod: (Long, String) => Task[Option[AuthMethod]],
   checkAuthMethod: AuthMethod => Boolean,
   issueTokenFor: User => String
-): ZIO[Any, Nothing, LoginResponse] = {
+): Task[LoginResponse] = {
   
-  (for {
-    // Get user or fail with UserNotFound
-    user <- findUser(email).flatMap {
-      case None => ZIO.fail(LoginError.UserNotFound)
-      case Some(user) => ZIO.succeed(user)
-    }
+  // Find user
+  ZIO.fromOption(findUser(email).orDie)
+    .mapError(_ => LoginResponse.InvalidCredentials)
     
     // Check if user is archived
-    _ <- ZIO.fail(LoginError.AccountDeleted).when(user.archived)
+    .filterOrElseWith(
+      user => !user.archived,
+      _ => ZIO.succeed(LoginResponse.Deleted)
+    )
     
-    // Get auth method or fail with AuthMethodNotFound
-    authMethod <- findAuthMethod(user.id, defaultProvider).flatMap {
-      case None => ZIO.fail(LoginError.AuthMethodNotFound)
-      case Some(method) => ZIO.succeed(method)
-    }
-    
-    // Check auth method validity
-    _ <- ZIO.fail(LoginError.InvalidAuthMethod).when(!checkAuthMethod(authMethod))
-    
-    // Create success response
-    response = LoginResponse.LoggedIn(issueTokenFor(user))
-  } yield response
-}.mapError {
-  case LoginError.UserNotFound => LoginResponse.InvalidCredentials
-  case LoginError.AccountDeleted => LoginResponse.Deleted
-  case LoginError.AuthMethodNotFound => LoginResponse.ProviderAuthFailed
-  case LoginError.InvalidAuthMethod => LoginResponse.InvalidCredentials
+    // Get auth method
+    .flatMap(user => 
+      ZIO.fromOption(findAuthMethod(user.id, "email").orDie)
+        .mapError(_ => LoginResponse.ProviderAuthFailed)
+        
+        // Check auth method validity
+        .filterOrElseWith(
+          authMethod => checkAuthMethod(authMethod),
+          _ => ZIO.succeed(LoginResponse.InvalidCredentials)
+        )
+        
+        // Create success response
+        .map(_ => LoginResponse.LoggedIn(issueTokenFor(user)))
+    ).catchAll(ZIO.succeed(_))
 }
 ```
 
 **Pros:**
 - Powerful effect system
-- Clear separation of error types and business logic errors
-- Strong type safety throughout
+- Strong type safety
+- Comprehensive error handling capabilities
 
 **Cons:**
-- Multiple transformations needed (error domain to response domain)
-- More complex to set up
-- Requires learning ZIO's specific error handling approach
+- Steeper learning curve
+- More verbose for simple cases
+- Requires adopting the whole ZIO ecosystem
 
 ## When to Use Sealed Monad
 
