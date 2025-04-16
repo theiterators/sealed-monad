@@ -1,41 +1,30 @@
 ---
+slug: /
 sidebar_position: 1
+title: Introduction to Sealed Monad
 ---
 
 # Introduction to Sealed Monad
 
-Sealed Monad is a Scala library designed to provide elegant, business logic-oriented, for-comprehension-style error handling that improves code readability and maintainability.
+[![Maven Central](https://img.shields.io/maven-central/v/pl.iterators/sealed-monad_2.13.svg)](https://search.maven.org/artifact/pl.iterators/sealed-monad_2.13)
+[![GitHub license](https://img.shields.io/badge/license-Apache2.0-blue.svg)](https://raw.githubusercontent.com/theiterators/sealed-monad/master/COPYING)
+[![sealed-monad Scala version support](https://index.scala-lang.org/theiterators/sealed-monad/sealed-monad/latest-by-scala-version.svg)](https://index.scala-lang.org/theiterators/sealed-monad/sealed-monad)
+
+Sealed Monad is a Scala library that provides elegant, business logic-oriented, for-comprehension-style error handling. It enhances code readability and maintainability by allowing you to express business logic with clear error handling in a linear, declarative way.
 
 ## What is Sealed Monad?
 
-Sealed Monad allows you to write clear, linear business logic that handles errors in a declarative way, without nested pattern matching or complex monad transformer stacks. It's particularly valuable when working with:
+Sealed Monad can be thought of as "EitherT on steroids, with more human-readable method names." It provides a clean, intuitive, and type-safe way to handle errors in functional programming, particularly in complex business logic scenarios.
 
-- Complex validation workflows
-- API responses with multiple possible outcomes
-- Business logic with branching decisions
-- Error-prone operations that need clean error handling
+If you've ever found yourself writing deeply nested pattern matching or complex conditional structures for error handling, Sealed Monad offers a more elegant approach.
 
-If you're familiar with Cats' `EitherT`, you can think of Sealed Monad as "EitherT on steroids" with a focus on developer ergonomics and readability.
-
-## Core Benefits
+## Key Benefits
 
 - **Linear Code Flow**: Write top-down, sequential code that's easy to follow
-- **Descriptive Error Handling**: No more nested pattern matching or complex conditional structures
-- **Business-Logic Focus**: Error handling that focuses on representing business outcomes, not technical errors
+- **Type Safety**: Enforce handling of all error cases at compile time
+- **Reduced Boilerplate**: No need to map between different error types when combining functions
 - **For-Comprehension Friendly**: Leverage Scala's for-comprehensions for clean, pipeline-style code
-- **ADT-Driven Design**: Naturally works with sealed trait hierarchies to model operation results
-
-## Installation
-
-Add the following to your `build.sbt`:
-
-```scala
-libraryDependencies += "pl.iterators" %% "sealed-monad" % "@VERSION@"
-```
-
-Sealed Monad is available for:
-- Scala 2.13.x and 3.x
-- JVM, ScalaNative, and Scala.js platforms
+- **Business-Logic Oriented**: Error handling focused on representing business outcomes, not just technical errors
 
 ## Quick Example
 
@@ -45,10 +34,10 @@ Here's a simple example showing how Sealed Monad can clean up a typical validati
 import pl.iterators.sealedmonad.syntax._
 import cats.effect.IO
 
-// Response ADT
+// Define our result ADT
 sealed trait CreateUserResponse
 object CreateUserResponse {
-  case class Created(id: UserId) extends CreateUserResponse
+  case class Success(id: String) extends CreateUserResponse
   case object EmailAlreadyExists extends CreateUserResponse
   case object InvalidEmail extends CreateUserResponse
   case object PasswordTooWeak extends CreateUserResponse
@@ -57,21 +46,45 @@ object CreateUserResponse {
 def createUser(request: CreateUserRequest): IO[CreateUserResponse] = {
   (for {
     // Validate email format
-    email <- validateEmail(request.email)
-              .valueOr[CreateUserResponse](CreateUserResponse.InvalidEmail)
+    _ <- validateEmail(request.email)
+          .ensure(isValid => isValid, CreateUserResponse.InvalidEmail)
     
     // Check if email already exists
-    _ <- userRepository.findByEmail(email)
-          .ensure(_.isEmpty, CreateUserResponse.EmailAlreadyExists)
+    emailExists <- userRepository.emailExists(request.email).seal
+    _ <- (!emailExists).pure[IO]
+          .ensure(identity, CreateUserResponse.EmailAlreadyExists)
     
     // Validate password strength
     _ <- validatePassword(request.password)
-          .valueOr[CreateUserResponse](CreateUserResponse.PasswordTooWeak)
+          .ensure(isStrong => isStrong, CreateUserResponse.PasswordTooWeak)
     
     // All validations passed, create the user
-    userId <- userRepository.create(email, request.password).seal
-  } yield CreateUserResponse.Created(userId)).run
+    userId <- userRepository.create(request.email, request.password).seal
+  } yield CreateUserResponse.Success(userId)).run
 }
 ```
 
-In the following sections, we'll explore the core concepts, operators, and best practices for using Sealed Monad effectively in your applications.
+## Installation
+
+Add the following to your `build.sbt`:
+
+```scala
+libraryDependencies += "pl.iterators" %% "sealed-monad" % "1.3"
+```
+
+For more detailed installation instructions and examples, see the [Installation Guide](installation).
+
+## Documentation
+
+- [Motivations & Core Concepts](motivations)
+- [Practical Use Cases](usecases)
+- [API Reference](api-reference)
+- [Advanced Features](advanced-features)
+- [Best Practices](best-practices)
+- [Comparison with Other Approaches](comparison)
+- [Migration Guide](migration-guide)
+- [FAQ](faq)
+
+## License
+
+This project is licensed under the Apache License 2.0 - see the [LICENSE](https://github.com/theiterators/sealed-monad/blob/master/LICENSE) file for details.
