@@ -1,6 +1,12 @@
-# sealed-monad
+---
+slug: /
+sidebar_position: 1
+title: Introduction to Sealed Monad
+---
 
-[![Maven Central](https://img.shields.io/maven-central/v/pl.iterators/sealed-monad_2.13.svg)]()
+# Introduction to Sealed Monad
+
+[![Maven Central](https://img.shields.io/maven-central/v/pl.iterators/sealed-monad_2.13.svg)](https://search.maven.org/artifact/pl.iterators/sealed-monad_2.13)
 [![GitHub license](https://img.shields.io/badge/license-Apache2.0-blue.svg)](https://raw.githubusercontent.com/theiterators/sealed-monad/master/COPYING)
 [![sealed-monad Scala version support](https://index.scala-lang.org/theiterators/sealed-monad/sealed-monad/latest-by-scala-version.svg)](https://index.scala-lang.org/theiterators/sealed-monad/sealed-monad)
 
@@ -81,4 +87,4 @@ For more detailed installation instructions and examples, see the [Installation 
 
 ## License
 
-This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the Apache License 2.0 - see the [LICENSE](https://github.com/theiterators/sealed-monad/blob/master/LICENSE) file for details.

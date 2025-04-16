@@ -4,23 +4,23 @@
 const lightCodeTheme = require('prism-react-renderer/themes/github');
 const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 
-const projectTitle = 'sealed-monad';
+const projectTitle = 'Sealed Monad';
 const organizationName = 'theiterators';
 const editDocsUrl = 'https://github.com/theiterators/sealed-monad/tree/master/docs/';
 const docsPath = '../docs';
-const navbarTitle = 'sealed-monad';
+const navbarTitle = 'Sealed Monad';
 const projectGitHubUrl = 'https://github.com/theiterators/sealed-monad';
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: projectTitle,
+  title: 'Sealed Monad Documentation',
   tagline: 'Scala library for elegant, business logic-oriented error handling with clean, linear code flow',
-  url: 'https://theiterators.github.io/sealed-monad/',
+  url: 'https://theiterators.github.io',
   baseUrl: '/sealed-monad/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',
-  organizationName: organizationName, // Usually your GitHub org/user name.
+  organizationName: organizationName, // Usually your GitHub org/acuser name.
   projectName: projectTitle, // Usually your repo name.
 
   presets: [
@@ -29,11 +29,17 @@ const config = {
       /** @type {import('@docusaurus/preset-classic').Options} */
       ({
         docs: {
+          routeBasePath: '/', // This makes docs the root
           sidebarPath: require.resolve('./sidebars.js'),
           path: docsPath,
           // Please change this to your repo.
           editUrl: editDocsUrl,
+          showLastUpdateAuthor: false,
+          showLastUpdateTime: false,
         },
+        // Disable the default landing page
+        blog: false,
+        pages: false,
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
         },
@@ -51,8 +57,7 @@ const config = {
         },
         items: [
           {
-            type: 'doc',
-            docId: 'intro',
+            to: '/',
             position: 'left',
             label: 'Documentation',
           },
@@ -63,6 +68,7 @@ const config = {
           },
         ],
       },
+      hideableSidebar: true,
       footer: {
         style: 'dark',
         links: [
@@ -71,7 +77,7 @@ const config = {
             items: [
               {
                 label: 'Introduction',
-                to: '/docs/intro',
+                to: '/',
               },
             ],
           },

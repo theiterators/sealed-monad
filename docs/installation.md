@@ -135,7 +135,7 @@ Sealed Monad is built on top of cats and is designed to work seamlessly with cat
 
 ## Additional Resources
 
-- [Official Documentation](https://theiterators.github.io/sealed-monad/docs/introduction)
+- [Official Documentation](https://theiterators.github.io/sealed-monad/)
 - [GitHub Repository](https://github.com/theiterators/sealed-monad)
 - [API Documentation](https://javadoc.io/doc/pl.iterators/sealed-monad_2.13/latest/index.html)
 
