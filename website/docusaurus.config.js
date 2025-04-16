@@ -68,7 +68,9 @@ const config = {
           },
         ],
       },
-      hideableSidebar: true,
+      sidebar: {
+        hideable: true,
+      },
       footer: {
         style: 'dark',
         links: [
