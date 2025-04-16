@@ -16,6 +16,18 @@ The fundamental type in Sealed Monad is `Sealed[F[_], +A, +ADT]` with three type
 - `A`: The intermediate value type 
 - `ADT`: The final value or "result" type (typically a sealed trait hierarchy)
 
+Sealed Monad is designed around the principle that all possible outcomes of an operation should be represented as part of a single ADT (Algebraic Data Type). In this design, successful outcomes are typically represented as case classes that extend the result ADT, while error conditions are represented as case objects of the same ADT.
+
+For example:
+```scala
+sealed trait UserResponse
+case class Success(user: User) extends UserResponse
+case object NotFound extends UserResponse
+case object Unauthorized extends UserResponse
+```
+
+This design allows the `run` method to return a single, unified type that can represent all possible outcomes of the operation.
+
 ## Creating Sealed Instances
 
 ### From Effects

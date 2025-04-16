@@ -16,6 +16,7 @@ We'll use these domain models for our examples:
 import scala.concurrent.Future
 import cats.Monad
 import cats.instances.future._
+import cats.syntax.applicative._ 
 implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
 
 // Domain models

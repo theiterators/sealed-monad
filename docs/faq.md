@@ -214,6 +214,62 @@ If you have performance-critical code, consider:
 
 Yes, Sealed Monad is compatible with both Scala 2.13.x and Scala 3.x.
 
+## Why Do I Get a Compilation Error with the `run` Method?
+
+The `run` method in Sealed Monad has a specific type constraint: the success type `A` must be a subtype of the error type `ADT`. This is enforced by the type parameter bound:
+
+```scala
+def run[ADT1 >: ADT](implicit ev: A <:< ADT1, F: Monad[F]): F[ADT1]
+```
+
+This constraint exists because the `run` method needs to return a single type that can represent both successful and error outcomes.
+
+### Common Solutions
+
+1. **Make your success type extend your error type**:
+   ```scala
+   sealed trait Response
+   case class Success(value: Int) extends Response
+   case object NotFound extends Response
+   
+   // Now Success <:< Response, so this works:
+   val result: Future[Response] = sealedValue.run
+   ```
+
+2. **Map your intermediate value to a result type before calling `run`**:
+   ```scala
+   sealed trait Response
+   case class Success(value: Int) extends Response
+   case object NotFound extends Response
+   
+   // Map Int to Success before calling run
+   val result: Future[Response] = sealedInt.map(Success).run
+   ```
+
+3. **Use pattern matching after the computation**:
+   ```scala
+   // Instead of calling run directly
+   val either: Future[Either[Error, Int]] = sealedInt.map(Right(_)).getOrElse(Left(Error))
+   
+   // Then pattern match on the result
+   either.map {
+     case Right(value) => handleSuccess(value)
+     case Left(error) => handleError(error)
+   }
+   ```
+
+### Required Imports
+
+When working with Sealed Monad, make sure you have all the necessary imports:
+
+```scala
+import pl.iterators.sealedmonad.syntax._  // For extension methods
+import cats.instances.future._  // For Future instances
+import cats.syntax.applicative._  // For pure method
+```
+
+The `cats.syntax.applicative._` import is particularly important when using methods like `pure` on primitive values.
+
 ## Where Can I Learn More?
 
 - [GitHub Repository](https://github.com/theiterators/sealed-monad)
