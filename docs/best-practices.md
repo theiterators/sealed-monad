@@ -121,6 +121,46 @@ class OrderService(
   private def calculateTotal(products: List[Product]): BigDecimal = 
     products.map(_.price).sum
 }
+```
+
+
+### ❌ Don't: Expose Sealed Monad in Public Interfaces
+
+Sealed Monad should never be exposed in the public interface of your module or service. It's designed for internal processing and error handling only.
+
+```scala
+// ❌ DON'T expose Sealed Monad in your public API
+def create(auth: AuthContext, orgId: OrganizationId): Sealed[IO, Roadmap, RoadmapCreateResult]
+
+// ✅ DO return the effect type with your ADT directly
+def create(auth: AuthContext, orgId: OrganizationId): IO[RoadmapCreateResult]
+```
+In a real service implementation, keep Sealed Monad internal:
+
+```scala
+class RoadmapService {
+  // Define your Step type alias for better readability
+  private type Step[A] = Sealed[IO, A, RoadmapCreateResult]
+  
+  // Public interface returns IO[Result], not Sealed[IO, _, _]
+  def create(
+    auth: AuthContext, 
+    orgId: OrganizationId,
+    request: RoadmapCreateRequest
+  ): IO[RoadmapCreateResult] =
+    (for {
+      _            <- checkAccessToOrganization(auth, orgId)
+      organization <- findOrganization(orgId)
+      roadmap      <- createRoadmap(organization, auth.id, request)
+    } yield RoadmapCreateResult.Created(roadmap)).run
+    
+  // Private methods use the Step type alias
+  private def checkAccessToOrganization(auth: AuthContext, id: OrganizationId): Sealed[IO, Boolean, RoadmapCreateResult] = ...
+  private def findOrganization(id: OrganizationId): Sealed[IO, Organization, RoadmapCreateResult] = ...
+  private def createRoadmap(org: Organization, userId: UserId, request: RoadmapCreateRequest): Sealed[IO, Roadmap, RoadmapCreateResult] = ...
+}
+```
+By keeping Sealed Monad as an implementation detail, you maintain cleaner module boundaries and avoid leaking implementation details to your API consumers.
 
 ### ❌ Don't: Mix Business Logic with Technical Details
 
@@ -216,6 +256,54 @@ def processOrder(orderId: String): IO[OrderResponse] = {
       .tap(payment => logger.info(s"Payment processed: ${payment.id}"))
   } yield OrderResponse.Success(order.id)).run
 }
+```
+
+
+### ✅ Use valueOrF, ensureF, attemptF for Logging with Cats Effect
+
+The **valueOrF** operator extends the valueOr pattern with effectful error handling. Here, when a job can't be found, we log the error before returning the failure case. This allows for better observability while preserving your typed error channel.
+
+
+```scala
+private def findJob(jobName: String): Step[Job] =
+  jobService.findJob(jobName)
+    .valueOrF(Logger[IO].error(s"Unable to find job $jobName").as(JobResult.JobNotFound))
+```
+
+The **ensureF** operator combines validation with effectful error handling. In this example, we ensure the query results are non-empty, and if they aren't, we log an error message before returning the appropriate domain error. This pattern is perfect when you need to validate results and provide context about the failure.
+
+```scala
+private def listJobs(filters: Seq[JobFilter]): JobStep[Seq[Job]] =
+  jobRepository
+    .list(filters)
+    .ensureF(
+      _.nonEmpty,
+      Logger[IO]
+        .error("No matching job found for request")
+        .as(JobResult.NotFound)
+    )
+```
+
+The **attemptF** operator is useful when you need to perform effects (like logging) during error handling. In this example, when a payment operation fails, we log the specific error before returning a typed error result. This provides rich context about failures while keeping your error handling clean and maintaining your typed error channel.
+
+
+```scala
+private def processJobPayment(job: Job): StepIO[PaymentConfirmation] =
+  paymentService.process(job.cost).seal.attemptF {
+    case PaymentResult.Success(confirmation) => IO.pure(Right(confirmation))
+    case PaymentResult.Declined => 
+      Logger[IO]
+        .error(s"Payment declined for job ${job.id}")
+        .as(Left(JobResult.PaymentFailed("Payment declined")))
+    case PaymentResult.InsufficientFunds => 
+      Logger[IO]
+        .error(s"Insufficient funds for job ${job.id}")
+        .as(Left(JobResult.InsufficientFunds))
+    case PaymentResult.ProcessingError(error) => 
+      Logger[IO]
+        .error(s"Payment processing error for job ${job.id}: $error")
+        .as(Left(JobResult.PaymentFailed(error)))
+  }
 ```
 
 ### ✅ Use inspect for Comprehensive Logging

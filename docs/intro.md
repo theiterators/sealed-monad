@@ -52,7 +52,7 @@ def createUser(request: CreateUserRequest): IO[CreateUserResponse] = {
     // Check if email already exists
     emailExists <- userRepository.emailExists(request.email).seal
     _ <- (!emailExists).pure[IO]
-          .ensure(identity, CreateUserResponse.EmailAlreadyExists)
+          .ensure(notExists => notExists, CreateUserResponse.EmailAlreadyExists)
     
     // Validate password strength
     _ <- validatePassword(request.password)
@@ -79,7 +79,6 @@ For more detailed installation instructions and examples, see the [Installation 
 - [Motivations & Core Concepts](motivations)
 - [Practical Use Cases](usecases)
 - [API Reference](api-reference)
-- [Advanced Features](advanced-features)
 - [Best Practices](best-practices)
 - [Comparison with Other Approaches](comparison)
 - [Migration Guide](migration-guide)

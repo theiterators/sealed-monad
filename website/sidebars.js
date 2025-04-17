@@ -20,7 +20,6 @@ const sidebars = {
     'installation',
     'usecases',
     'api-reference',
-    'advanced-features',
     'best-practices',
     'comparison',
     'migration-guide',
