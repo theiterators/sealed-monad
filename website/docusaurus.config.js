@@ -17,6 +17,7 @@ const config = {
   tagline: 'Scala library for elegant, business logic-oriented error handling with clean, linear code flow',
   url: 'https://theiterators.github.io',
   baseUrl: '/sealed-monad/',
+  trailingSlash: false,
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',
