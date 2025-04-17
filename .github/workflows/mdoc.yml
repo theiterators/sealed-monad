@@ -1,49 +1,27 @@
 name: Website
 on:
   push:
-    branches: [main, master]
+    branches: [master]
     tags: ["*"]
-
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout full history
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Set up Java 11
-        uses: actions/setup-java@v3
+      - uses: actions/setup-node@v4
         with:
-          distribution: 'temurin'
-          java-version: '11'
-
-      - name: Set up Scala
-        uses: olafurpg/setup-scala@v13
-
-      - name: Decode & install SSH key
+          node-version: "16"
+      - uses: actions/setup-java@v4
+        with:
+          java-version: 11
+          distribution: temurin
+      - uses: sbt/setup-sbt@v1
+      - uses: olafurpg/setup-gpg@v3
+      - run: sbt '++2.12.19; docs/docusaurusPublishGhpages'
         env:
-          SSH_KEY_B64: ${{ secrets.GIT_DEPLOY_KEY }}
-        run: |
-          mkdir -p ~/.ssh
-          echo "$SSH_KEY_B64" \
-            | base64 --decode \
-            | tr -d '\r' \
-            > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H github.com >> ~/.ssh/known_hosts
-          eval "$(ssh-agent -s)"
-          ssh-add ~/.ssh/id_rsa
-
-      - name: Configure git identity
-        run: |
-          git config --global user.email "actions@github.com"
-          git config --global user.name "GitHub Actions"
-
-      - name: Publish Docusaurus to gh-pages
-        run: sbt '++2.13.15 docusaurusPublishGhpages'
-
-      - name: Show diff on failure
+          GIT_DEPLOY_KEY: ${{ secrets.GIT_DEPLOY_KEY }}
+      - name: Check git diff
         if: ${{ failure() }}
         run: git diff
