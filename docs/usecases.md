@@ -8,24 +8,8 @@ slug: /usecases
 
 Sealed Monad shines in real-world business logic scenarios. This section demonstrates practical examples showing how Sealed Monad improves readability and maintainability in different contexts.
 
-## Domain Models
+> **Note:** You can find complete, runnable versions of these examples in the [examples directory](https://github.com/theiterators/sealed-monad/tree/master/examples/src).
 
-We'll use these domain models for our examples:
-
-```scala
-import scala.concurrent.Future
-import cats.Monad
-import cats.instances.future._
-import cats.syntax.applicative._ 
-implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
-
-// Domain models
-case class User(id: String, email: String, archived: Boolean)
-case class Address(street: String, city: String, zipCode: String)
-case class Product(id: String, name: String, stock: Int, price: BigDecimal)
-case class Order(id: String, userId: String, items: List[OrderItem])
-case class OrderItem(productId: String, quantity: Int)
-```
 
 ## Use Case 1: Form Validation & Processing
 
@@ -175,87 +159,6 @@ Benefits of this structure:
 3. **Separation of concerns** - Each step handles a specific part of the business logic
 4. **Testability** - Each step can be tested independently
 
-## Use Case 3: API Controllers
-
-Sealed Monad fits perfectly for API controllers where you need to handle multiple validation steps and translate domain responses to HTTP responses.
-
-### Implementation with HTTP4s
-
-```scala
-import cats.effect.IO
-import org.http4s._
-import org.http4s.dsl.io._
-import pl.iterators.sealedmonad.syntax._
-import io.circe.generic.auto._
-import org.http4s.circe.CirceEntityCodec._
-
-case class CreateProductRequest(name: String, price: BigDecimal, stock: Int)
-
-sealed trait ProductResponse
-object ProductResponse {
-  case class Created(id: String) extends ProductResponse
-  case object NameTooShort extends ProductResponse
-  case object InvalidPrice extends ProductResponse
-  case object DuplicateName extends ProductResponse
-}
-
-class ProductController(productService: ProductService[IO]) {
-  
-  val routes: HttpRoutes[IO] = HttpRoutes.of[IO] {
-    case req @ POST -> Root / "products" =>
-      for {
-        createReq <- req.as[CreateProductRequest]
-        result <- createProduct(createReq)
-        resp <- mapToHttpResponse(result)
-      } yield resp
-  }
-  
-  private def createProduct(req: CreateProductRequest): IO[ProductResponse] = {
-    (for {
-      // Validate name length
-      _ <- IO.pure(req.name.length >= 3).ensure(
-             identity, 
-             ProductResponse.NameTooShort
-           )
-      
-      // Validate price
-      _ <- IO.pure(req.price > BigDecimal(0)).ensure(
-             identity, 
-             ProductResponse.InvalidPrice
-           )
-      
-      // Check if name is already taken
-      nameExists <- productService.existsByName(req.name).seal
-      _ <- IO.pure(!nameExists).ensure(
-             identity, 
-             ProductResponse.DuplicateName
-           )
-      
-      // Create product
-      product <- productService.create(req.name, req.price, req.stock).seal
-    } yield ProductResponse.Created(product.id)).run
-  }
-  
-  private def mapToHttpResponse(response: ProductResponse): IO[Response[IO]] = 
-    response match {
-      case ProductResponse.Created(id) => 
-        Created(Map("id" -> id))
-      case ProductResponse.NameTooShort => 
-        BadRequest("Product name must be at least 3 characters")
-      case ProductResponse.InvalidPrice => 
-        BadRequest("Price must be greater than zero")
-      case ProductResponse.DuplicateName => 
-        Conflict("A product with this name already exists")
-    }
-}
-```
-
-This pattern works exceptionally well for API controllers:
-1. **Clean separation** - Business logic and HTTP concerns are separate
-2. **Explicit mapping** - Domain responses map clearly to HTTP responses
-3. **Consistent validation** - All validation follows the same pattern
-4. **Self-contained** - Each endpoint handles its own validation and response mapping
-
 ## Key Takeaways
 
 These examples demonstrate how Sealed Monad can improve your code by:
@@ -265,4 +168,4 @@ These examples demonstrate how Sealed Monad can improve your code by:
 3. **Enabling abstraction layers** - From high-level flows to implementation details
 4. **Standardizing error handling** - Consistent approach across different operations
 
-For more examples and detailed explanations, see the [Advanced Features](advanced-features) and [Best Practices](best-practices) sections.
+For more examples and detailed explanations, see the [Best Practices](best-practices) sections.

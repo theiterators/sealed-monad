@@ -73,7 +73,6 @@ For more detailed installation instructions and examples, see the [Installation 
 - [Motivations & Core Concepts](motivations)
 - [Practical Use Cases](usecases)
 - [API Reference](api-reference)
-- [Advanced Features](advanced-features)
 - [Best Practices](best-practices)
 - [Comparison with Other Approaches](comparison)
 - [Migration Guide](migration-guide)
