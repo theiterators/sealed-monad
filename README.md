@@ -70,13 +70,14 @@ For more detailed installation instructions and examples, see the [Installation 
 
 ## Documentation
 
-- [Motivations & Core Concepts](motivations)
-- [Practical Use Cases](usecases)
-- [API Reference](api-reference)
-- [Best Practices](best-practices)
-- [Comparison with Other Approaches](comparison)
-- [Migration Guide](migration-guide)
-- [FAQ](faq)
+- [Motivations & Core Concepts](https://theiterators.github.io/sealed-monad/motivations)
+- [Installation Guide](https://theiterators.github.io/sealed-monad/installation)
+- [Practical Use Cases](https://theiterators.github.io/sealed-monad/usecases)
+- [API Reference](https://theiterators.github.io/sealed-monad/api-reference)
+- [Best Practices](https://theiterators.github.io/sealed-monad/best-practices)
+- [Comparison with Other Approaches](https://theiterators.github.io/sealed-monad/comparison)
+- [Migration Guide](https://theiterators.github.io/sealed-monad/migration-guide)
+- [FAQ](https://theiterators.github.io/sealed-monad/faq)
 
 ## License
 
