@@ -21,7 +21,7 @@ const config = {
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',
   organizationName: organizationName, // Usually your GitHub org/acuser name.
-  projectName: projectTitle, // Usually your repo name.
+  projectName: 'sealed-monad', // Usually your repo name.
 
   presets: [
     [
