@@ -2,7 +2,7 @@ val isScala3 = Def.setting(CrossVersion.partialVersion(scalaVersion.value).exist
 
 // Dependencies
 
-val catsVersion                  = "2.12.0"
+val catsVersion                  = "2.13.0"
 val castsTestkitScalatestVersion = "2.1.5"
 val scalatestVersion             = "3.2.19"
 val disciplineVersion            = "2.3.0"
