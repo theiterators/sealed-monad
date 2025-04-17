@@ -8,38 +8,23 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout full history
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
         with:
           fetch-depth: 0
 
-      - name: Set up Java 11
-        uses: actions/setup-java@v3
+      - uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '11'
 
-      - name: Set up Scala
-        uses: olafurpg/setup-scala@v13
+      - uses: olafurpg/setup-scala@v13
 
-      - name: Install SSH deploy key
-        env:
-          GIT_DEPLOY_KEY: ${{ secrets.GIT_DEPLOY_KEY }}
-        run: |
-          mkdir -p ~/.ssh
-          # strip any Windows CRs and preserve proper newlines
-          printf '%s\n' "$GIT_DEPLOY_KEY" | tr -d '\r' > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          # add GitHub to known_hosts
-          ssh-keyscan -H github.com >> ~/.ssh/known_hosts
-          eval "$(ssh-agent -s)"
-          ssh-add ~/.ssh/id_rsa
+      - uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.GIT_DEPLOY_KEY }}
 
       - name: Publish Docusaurus to gh-pages
         run: sbt '++2.13.15 docusaurusPublishGhpages'
-        env:
-          # ensure sbt picks up our Java 11 install
-          JAVA_HOME: ${{ steps.setup-java.outputs.java-home }}
 
       - name: Check git diff if deploy failed
         if: ${{ failure() }}
