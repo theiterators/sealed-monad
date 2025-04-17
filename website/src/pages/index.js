@@ -19,6 +19,11 @@ function HomepageHeader() {
             to="/docs/intro">
             Get Started
           </Link>
+          <Link
+            className="button button--outline button--lg margin-left--md"
+            to="https://github.com/theiterators/sealed-monad">
+            GitHub
+          </Link>
         </div>
       </div>
     </header>
@@ -30,7 +35,7 @@ export default function Home() {
   return (
     <Layout
       title={`${siteConfig.title}`}
-      description="Docs site">
+      description="Scala library for elegant, business logic-oriented error handling with human-readable code flow">
       <HomepageHeader />
       <main>
         <HomepageFeatures />

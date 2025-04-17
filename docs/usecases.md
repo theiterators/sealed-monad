@@ -1,121 +1,171 @@
-# Use Cases
+---
+id: usecases
+title: Practical Use Cases
+slug: /usecases
+---
+
+# Practical Use Cases
+
+Sealed Monad shines in real-world business logic scenarios. This section demonstrates practical examples showing how Sealed Monad improves readability and maintainability in different contexts.
+
+> **Note:** You can find complete, runnable versions of these examples in the [examples directory](https://github.com/theiterators/sealed-monad/tree/master/examples/src).
 
 
-```scala mdoc:reset-object
-  import scala.concurrent.Future
-  import cats.instances.future._
-  import cats.Monad
-  import cats.data.OptionT
-  implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
-  implicit val M: Monad[Future] = implicitly[Monad[Future]]
+## Use Case 1: Form Validation & Processing
 
-  sealed trait Provider
+When processing form input, multiple validations often need to be performed before proceeding. Sealed Monad provides a clean way to express this workflow.
 
-  final case class EmailAddress(value: String) extends AnyVal
-  final case class User(id: Long, email: EmailAddress, archived: Boolean)
-  final case class AuthMethod(provider: Provider) extends AnyVal
-  
-  sealed trait LoginResponse
+### The Response ADT
 
-  object LoginResponse {
-      final case class LoggedIn(token: String)             extends LoginResponse
-      case object AccountsMergeRequested                   extends LoginResponse
-      final case class AccountsMerged(token: String)       extends LoginResponse
-      case object InvalidCredentials                       extends LoginResponse
-      case object Deleted                                  extends LoginResponse
-      case object ProviderAuthFailed                       extends LoginResponse
-  }  
+```scala
+sealed trait RegistrationResponse
+object RegistrationResponse {
+  case class Success(userId: String) extends RegistrationResponse
+  case object EmailInvalid extends RegistrationResponse
+  case object EmailTaken extends RegistrationResponse
+  case object PasswordTooWeak extends RegistrationResponse
+  case object AddressInvalid extends RegistrationResponse
+}
 ```
 
-Our observations led us to creating Sealed Monad. Check out this ugly code:
+### Implementation with Sealed Monad
 
-```scala mdoc:nest
-def login(email: String,
-          findUser: String => Future[Option[User]],
-          findAuthMethod: (Long, Provider) => Future[Option[AuthMethod]],
-          issueTokenFor: User => String,
-          checkAuthMethodAction: AuthMethod => Boolean,
-          authMethodFromUserIdF: Long => AuthMethod,
-          mergeAccountsAction: (AuthMethod, User) => Future[LoginResponse]): Future[LoginResponse] =
-  findUser(email).flatMap {
-    case None =>
-      M.pure(LoginResponse.InvalidCredentials)
-    case Some(user) if user.archived =>
-      M.pure(LoginResponse.Deleted)
-    case Some(user) =>
-      val authMethod = authMethodFromUserIdF(user.id)
-      val actionT = OptionT(findAuthMethod(user.id, authMethod.provider))
-        .map(checkAuthMethodAction(_))
-      actionT.value flatMap {
-        case Some(true) =>
-          M.pure(LoginResponse.LoggedIn(issueTokenFor(user)))
-        case Some(false) =>
-          M.pure(LoginResponse.InvalidCredentials)
-        case None =>
-          mergeAccountsAction(authMethod, user)
-      }
-  }
-```
-
-Matches, ifs, monad-transformers everywhere! Yuck! Applying Sealed Monad:
-
-```scala mdoc
+```scala
 import pl.iterators.sealedmonad.syntax._
 
-def sealedLogin(email: String,
-                findUser: String => Future[Option[User]],
-                findAuthMethod: (Long, Provider) => Future[Option[AuthMethod]],
-                issueTokenFor: User => String,
-                checkAuthMethodAction: AuthMethod => Boolean,
-                authMethodFromUserIdF: Long => AuthMethod,
-                mergeAccountsAction: (AuthMethod, User) => Future[LoginResponse]): Future[LoginResponse] = {
-  val s = for {
-    user <- findUser(email)
-      .valueOr[LoginResponse](LoginResponse.InvalidCredentials)
-      .ensure(!_.archived, LoginResponse.Deleted)
-    userAuthMethod = authMethodFromUserIdF(user.id)
-    authMethod <- findAuthMethod(user.id, userAuthMethod.provider).valueOrF(mergeAccountsAction(userAuthMethod, user))
-  } yield if (checkAuthMethodAction(authMethod)) LoginResponse.LoggedIn(issueTokenFor(user)) else LoginResponse.InvalidCredentials
-
-  s.run
+def registerUser(
+  email: String,
+  password: String,
+  address: Address,
+  validateEmail: String => Future[Boolean],
+  checkEmailExists: String => Future[Boolean],
+  validatePassword: String => Future[Boolean],
+  validateAddress: Address => Future[Boolean],
+  createUser: (String, String, Address) => Future[User]
+): Future[RegistrationResponse] = {
+  (for {
+    // Validate email format
+    _ <- validateEmail(email)
+          .ensure(isValid => isValid, RegistrationResponse.EmailInvalid)
+    
+    // Check if email is already taken
+    emailExistsCheck <- checkEmailExists(email).seal
+    _ <- (!emailExistsCheck).pure[Future]
+          .ensure(notTaken => notTaken, RegistrationResponse.EmailTaken)
+    
+    // Validate password strength
+    _ <- validatePassword(password)
+          .ensure(isStrong => isStrong, RegistrationResponse.PasswordTooWeak)
+    
+    // Validate address
+    _ <- validateAddress(address)
+          .ensure(isValid => isValid, RegistrationResponse.AddressInvalid)
+    
+    // Create user
+    user <- createUser(email, password, address).seal
+  } yield RegistrationResponse.Success(user.id)).run
 }
 ```
 
-It's short, nice-looking and reads top-down.
+What makes this approach powerful:
+1. **Clear sequence** - Each validation step is explicit and in logical order
+2. **Early return** - Any validation failure short-circuits the entire computation
+3. **Flat structure** - No nested indentation, improving readability
+4. **Self-documenting** - The code clearly represents the business process
 
-Below approach focuses on making main service flow clear, understandable in few seconds and wholely contained in for-comprehension. Compiling example in [here](https://github.com/theiterators/sealed-monad/blob/master/examples/src/main/scala/pl/iterators/sealedmonad/examples/Options.scala#L103).
+## Use Case 2: Structuring Complex Services
 
-```scala mdoc
-class Example3[M[_]: Monad] {
-  import pl.iterators.sealedmonad.Sealed
-  import pl.iterators.sealedmonad.syntax._
+For complex business logic, Sealed Monad enables a tiered approach with clear abstraction layers.
 
-  // whole main service flow contained in 3 descriptive words in for comprehension
-  def sealedLogin(email: String): M[LoginResponse] =
+### The Response ADT
+
+```scala
+sealed trait OrderProcessingResponse
+object OrderProcessingResponse {
+  case class Success(orderId: String) extends OrderProcessingResponse
+  case object UserNotFound extends OrderProcessingResponse
+  case object ProductNotFound extends OrderProcessingResponse
+  case object InsufficientStock extends OrderProcessingResponse
+  case object PaymentFailed extends OrderProcessingResponse
+  case object ShippingUnavailable extends OrderProcessingResponse
+}
+```
+
+### Tiered Service Implementation
+
+```scala
+import pl.iterators.sealedmonad.syntax._
+import pl.iterators.sealedmonad.Sealed
+
+class OrderService[F[_]: Monad](
+  userRepository: UserRepository[F],
+  productRepository: ProductRepository[F],
+  paymentService: PaymentService[F],
+  shippingService: ShippingService[F],
+  orderRepository: OrderRepository[F]
+) {
+  // High-level business flow
+  def processOrder(userId: String, items: List[OrderItem]): F[OrderProcessingResponse] = {
     (for {
-      user        <- findAndValidateUser(email)
-      authMethod  <- findOrMergeAuthMethod(user)
-      loginResult <- validateAuthMethodAction(user, authMethod)
-    } yield loginResult).run
+      user      <- findUser(userId)
+      products  <- validateProducts(items)
+      payment   <- processPayment(user, products)
+      shipping  <- arrangeShipping(user, products)
+      order     <- createOrder(user, items, payment, shipping)
+    } yield OrderProcessingResponse.Success(order.id)).run
+  }
 
-  // three below private methods should have understandable, descriptive names. They hide boiler plate and contain error validation
-  private def findAndValidateUser(email: String): Sealed[M, User, LoginResponse] = ???
-  private def findOrMergeAuthMethod(user: User): Sealed[M, AuthMethod, LoginResponse] = ???
-  private def validateAuthMethodAction(user: User, authMethod: AuthMethod): Sealed[M, LoginResponse, Nothing] = ???
+  // Mid-level methods with focused responsibilities
+  private def findUser(userId: String): Sealed[F, User, OrderProcessingResponse] = 
+    userRepository.findById(userId)
+      .valueOr(OrderProcessingResponse.UserNotFound)
 
-  // below methods implementation could be coming from different services
-  def findUser: String => M[Option[User]]                         = ???
-  def findAuthMethod: (Long, Provider) => M[Option[AuthMethod]]   = ???
-  def authMethodFromUserIdF: Long => AuthMethod                   = ???
-  def mergeAccountsAction: (AuthMethod, User) => M[LoginResponse] = ???
-  def checkAuthMethodAction: AuthMethod => Boolean                = ???
-  def issueTokenFor: User => String                               = ???
+  private def validateProducts(items: List[OrderItem]): Sealed[F, List[Product], OrderProcessingResponse] = {
+    // Implementation to look up and validate each product
+    Monad[F].pure(List.empty[Product]).seal  // Simplified
+  }
+
+  private def processPayment(
+    user: User, 
+    products: List[Product]
+  ): Sealed[F, String, OrderProcessingResponse] = {
+    // Implementation to process payment
+    Monad[F].pure("payment-123").seal  // Simplified
+  }
+
+  private def arrangeShipping(
+    user: User, 
+    products: List[Product]
+  ): Sealed[F, String, OrderProcessingResponse] = {
+    // Implementation to arrange shipping
+    Monad[F].pure("shipping-456").seal  // Simplified
+  }
+
+  private def createOrder(
+    user: User, 
+    items: List[OrderItem],
+    paymentId: String,
+    shippingId: String
+  ): Sealed[F, Order, OrderProcessingResponse] = {
+    // Implementation to create and store the order
+    Monad[F].pure(Order("order-789", user.id, items)).seal  // Simplified
+  }
 }
 ```
 
-The main flow consists just of 3 descriptive sentences that anyone can read and comprehend in few seconds. Everything is part of for-comprehension, which comes with the price of a little more boilerplate. Just a short look is required to
-understand what is happening in the service. Descriptive private method names serve as a "documentation". If one "needs to go deeper" into the validation details, then it will go to the body of the private method. Otherwise the validation/error handling code doesn't bloat understanding of the main method flow.
+Benefits of this structure:
+1. **High-level readability** - The main flow consists of descriptive steps
+2. **Progressive disclosure** - Implementation details are encapsulated in well-named methods
+3. **Separation of concerns** - Each step handles a specific part of the business logic
+4. **Testability** - Each step can be tested independently
 
-For more examples go [here](https://github.com/theiterators/sealed-monad/blob/master/examples/src/main/scala/pl/iterators/sealedmonad/examples/Options.scala).
+## Key Takeaways
 
-If you're curious about Sealed Monad design process, checkout [this amazing video by Marcin Rzeźnicki](https://www.youtube.com/watch?v=uZ7IFQTYPic).
+These examples demonstrate how Sealed Monad can improve your code by:
+
+1. **Flattening nested logic** - No more deeply indented conditional blocks
+2. **Providing clear failure paths** - Each validation step maps to a specific response
+3. **Enabling abstraction layers** - From high-level flows to implementation details
+4. **Standardizing error handling** - Consistent approach across different operations
+
+For more examples and detailed explanations, see the [Best Practices](best-practices) sections.
