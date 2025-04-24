@@ -63,7 +63,7 @@ def createUser(request: CreateUserRequest): IO[CreateUserResponse] = {
 Add the following to your `build.sbt`:
 
 ```scala
-libraryDependencies += "pl.iterators" %% "sealed-monad" % "1.3"
+libraryDependencies += "pl.iterators" %% "sealed-monad" % "2.0"
 ```
 
 For more detailed installation instructions and examples, see the [Installation Guide](installation).
