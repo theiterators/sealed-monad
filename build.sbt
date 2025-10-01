@@ -22,6 +22,7 @@ ThisBuild / githubWorkflowJavaVersions          := Seq(JavaSpec.temurin("11"), J
 ThisBuild / githubWorkflowPublishTargetBranches := Seq(RefPredicate.StartsWith(Ref.Tag("v")), RefPredicate.Equals(Ref.Branch("master")))
 ThisBuild / tlBaseVersion                       := "2.0"
 ThisBuild / tlCiHeaderCheck                     := false
+
 ThisBuild / publishTo := {
   val centralSnapshots = "https://central.sonatype.com/repository/maven-snapshots/"
   if (isSnapshot.value) Some("central-snapshots" at centralSnapshots)
@@ -59,7 +60,7 @@ lazy val baseSettings = Seq(
     "org.typelevel" %%% "discipline-scalatest" % disciplineVersion % Test
   ) ++ (if (isScala3.value) Nil
         else
-          Seq(compilerPlugin("org.typelevel" %% "kind-projector" % "0.13.3" cross CrossVersion.full))),
+          Seq(compilerPlugin("org.typelevel" %% "kind-projector" % "0.13.4" cross CrossVersion.full))),
   scalafmtOnCompile := true,
 // Sonatype settings
   licenses             := Seq("Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0")),
