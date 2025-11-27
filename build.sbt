@@ -9,7 +9,7 @@ val disciplineVersion            = "2.3.0"
 
 // Multiple Scala versions support
 
-val scala_2_13             = "2.13.15"
+val scala_2_13             = "2.13.18"
 val scala_3                = "3.3.4"
 val mainScalaVersion       = scala_2_13
 val supportedScalaVersions = Seq(scala_2_13, scala_3)
@@ -22,6 +22,7 @@ ThisBuild / githubWorkflowJavaVersions          := Seq(JavaSpec.temurin("11"), J
 ThisBuild / githubWorkflowPublishTargetBranches := Seq(RefPredicate.StartsWith(Ref.Tag("v")), RefPredicate.Equals(Ref.Branch("master")))
 ThisBuild / tlBaseVersion                       := "2.0"
 ThisBuild / tlCiHeaderCheck                     := false
+
 ThisBuild / publishTo := {
   val centralSnapshots = "https://central.sonatype.com/repository/maven-snapshots/"
   if (isSnapshot.value) Some("central-snapshots" at centralSnapshots)
