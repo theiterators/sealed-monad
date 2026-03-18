@@ -22,39 +22,39 @@ If you've ever found yourself writing deeply nested pattern matching or complex 
 
 ## Quick Example
 
-Here's a simple example showing how Sealed Monad can clean up a typical validation workflow:
+Without Sealed Monad — nested pattern matching:
+
+```scala
+def login(email: String, ...): Future[LoginResponse] = {
+  findUser(email).flatMap {
+    case None =>
+      Future.successful(LoginResponse.InvalidCredentials)
+    case Some(user) if user.archived =>
+      Future.successful(LoginResponse.Deleted)
+    case Some(user) =>
+      findAuthMethod(user.id, Provider.EmailPass).map {
+        case None => LoginResponse.ProviderAuthFailed
+        case Some(am) if !checkAuthMethod(am) => LoginResponse.InvalidCredentials
+        case Some(_) => LoginResponse.LoggedIn(issueTokenFor(user))
+      }
+  }
+}
+```
+
+With Sealed Monad — linear flow:
 
 ```scala
 import pl.iterators.sealedmonad.syntax._
-import cats.effect.IO
 
-// Define our result ADT
-sealed trait CreateUserResponse
-object CreateUserResponse {
-  case class Success(id: String) extends CreateUserResponse
-  case object EmailAlreadyExists extends CreateUserResponse
-  case object InvalidEmail extends CreateUserResponse
-  case object PasswordTooWeak extends CreateUserResponse
-}
-
-def createUser(request: CreateUserRequest): IO[CreateUserResponse] = {
+def login(email: String, ...): Future[LoginResponse] = {
   (for {
-    // Validate email format
-    _ <- validateEmail(request.email)
-          .ensure(isValid => isValid, CreateUserResponse.InvalidEmail)
-    
-    // Check if email already exists
-    emailExists <- userRepository.emailExists(request.email).seal
-    _ <- (!emailExists).pure[IO]
-          .ensure(identity, CreateUserResponse.EmailAlreadyExists)
-    
-    // Validate password strength
-    _ <- validatePassword(request.password)
-          .ensure(isStrong => isStrong, CreateUserResponse.PasswordTooWeak)
-    
-    // All validations passed, create the user
-    userId <- userRepository.create(request.email, request.password).seal
-  } yield CreateUserResponse.Success(userId)).run
+    user <- findUser(email)
+      .valueOr(LoginResponse.InvalidCredentials)
+      .ensure(!_.archived, LoginResponse.Deleted)
+    authMethod <- findAuthMethod(user.id, Provider.EmailPass)
+      .valueOr(LoginResponse.ProviderAuthFailed)
+      .ensure(checkAuthMethod, LoginResponse.InvalidCredentials)
+  } yield LoginResponse.LoggedIn(issueTokenFor(user))).run
 }
 ```
 
@@ -63,7 +63,7 @@ def createUser(request: CreateUserRequest): IO[CreateUserResponse] = {
 Add the following to your `build.sbt`:
 
 ```scala
-libraryDependencies += "pl.iterators" %% "sealed-monad" % "2.0"
+libraryDependencies += "pl.iterators" %% "sealed-monad" % "2.0.1"
 ```
 
 For more detailed installation instructions and examples, see the [Installation Guide](installation).

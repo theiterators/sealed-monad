@@ -500,63 +500,52 @@ If you're migrating an existing codebase to use Sealed Monad, here are some reco
 5. Add a .run call at the end
 6. Extract complex validation logic to helper methods
 
-## 8. Real-World Example: API Service
+## 8. Real-World Example: API Key Provisioning
 
-Here's a complete example of an API service using Sealed Monad:
+A multi-tenant API key provisioning service. The method must check the tenant exists, isn't suspended, hasn't exceeded their key quota, and is within rate limits — all before issuing a new key.
 
 ```scala
 import cats.effect.IO
 import pl.iterators.sealedmonad.syntax._
-import io.circe.generic.auto._
 
-// Domain models
-case class User(id: String, email: String, name: String, active: Boolean)
-case class RegisterRequest(email: String, password: String, name: String)
+case class Tenant(id: String, active: Boolean, plan: String)
+case class UsageStats(requestsToday: Int)
 
-// Result ADT
-sealed trait RegisterResponse
-object RegisterResponse {
-  case class Success(userId: String) extends RegisterResponse
-  case object EmailAlreadyExists extends RegisterResponse
-  case object InvalidEmailFormat extends RegisterResponse
-  case object PasswordTooWeak extends RegisterResponse
+sealed trait ProvisionKeyResponse
+object ProvisionKeyResponse {
+  final case class Provisioned(apiKey: String, rateLimit: Int) extends ProvisionKeyResponse
+  case object TenantNotFound extends ProvisionKeyResponse
+  case object TenantSuspended extends ProvisionKeyResponse
+  case object KeyLimitReached extends ProvisionKeyResponse
+  case object RateLimitExceeded extends ProvisionKeyResponse
 }
 
-class UserService(
-  emailValidator: EmailValidator,
-  passwordValidator: PasswordValidator,
-  userRepository: UserRepository
-) {
-  import pl.iterators.sealedmonad.syntax._
+object KeyService {
+  private val maxKeys = Map("free" -> 1, "pro" -> 5)
+  private val rateLimits = Map("free" -> 100, "pro" -> 1000)
 
-  def register(request: RegisterRequest): IO[RegisterResponse] = {
+  def provisionKey(tenantId: String): IO[ProvisionKeyResponse] = {
     (for {
-      // Validate email format
-      _ <- emailValidator.isValid(request.email)
-           .ensure(identity, RegisterResponse.InvalidEmailFormat)
+      tenant <- tenantRepo.find(tenantId)
+        .valueOr(ProvisionKeyResponse.TenantNotFound)
+        .ensure(_.active, ProvisionKeyResponse.TenantSuspended)
 
-      // Check if email already exists
-      emailExists <- userRepository.emailExists(request.email).seal
-      _ <- (!emailExists).pure[IO]
-           .ensure(identity, RegisterResponse.EmailAlreadyExists)
+      keyCount <- tenantRepo.countKeys(tenant.id).seal
+      maxAllowed = maxKeys.getOrElse(tenant.plan, 1)
+      _ <- IO.pure(keyCount < maxAllowed)
+        .ensure(identity, ProvisionKeyResponse.KeyLimitReached)
 
-      // Validate password strength
-      _ <- passwordValidator.isStrong(request.password)
-           .ensure(identity, RegisterResponse.PasswordTooWeak)
-
-      // Create user account
-      user <- userRepository.create(
-                User(generateId(), request.email, request.name, true)
-              ).seal
-    } yield RegisterResponse.Success(user.id)).run
+      stats <- usageService.getStats(tenant.id).seal
+      rateLimit = rateLimits.getOrElse(tenant.plan, 100)
+      _ <- IO.pure(stats.requestsToday < rateLimit)
+        .ensure(identity, ProvisionKeyResponse.RateLimitExceeded)
+    } yield ProvisionKeyResponse.Provisioned(
+      apiKey = generateApiKey(),
+      rateLimit = rateLimit
+    )).run
   }
-
-  private def generateId(): String = java.util.UUID.randomUUID().toString
 }
 ```
 
-This example demonstrates many Sealed Monad best practices:
-- Clear separation of high-level flow and implementation details
-- Well-designed ADT for response types
-- Validation performed at appropriate steps
-- Proper error handling and conversion
+Each step either advances the flow or short-circuits to a specific response — no nesting, no ambiguity about what went wrong.
+

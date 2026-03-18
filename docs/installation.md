@@ -31,7 +31,7 @@ Sealed Monad has the following dependencies:
 Add the following to your `build.sbt` file:
 
 ```scala
-libraryDependencies += "pl.iterators" %% "sealed-monad" % "1.3"
+libraryDependencies += "pl.iterators" %% "sealed-monad" % "2.0.1"
 ```
 
 The `%%` operator automatically adds the appropriate Scala version suffix to the artifact name.
@@ -39,14 +39,14 @@ The `%%` operator automatically adds the appropriate Scala version suffix to the
 ### Mill
 Add this to your `build.sc` file:
 ```scala
-import $ivy.`pl.iterators::sealed-monad:1.3`
+import $ivy.`pl.iterators::sealed-monad:2.0.1`
 ```
 Or, if using a module definition:
 ```scala
 object myModule extends ScalaModule {
   def scalaVersion = "2.13.12" // or your Scala version
   def ivyDeps = Agg(
-    ivy"pl.iterators::sealed-monad:1.3"
+    ivy"pl.iterators::sealed-monad:2.0.1"
   )
 }
 ```
