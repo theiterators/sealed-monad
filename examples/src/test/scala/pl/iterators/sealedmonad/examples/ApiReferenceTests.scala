@@ -104,7 +104,7 @@ class ApiReferenceTests extends AnyFunSuite with Matchers {
       // Example from docs: val loggedUser: Sealed[IO, User, UserError] = user.tap(u => println(s"User found: ${u.email}"))
       val sealedValue = Future.successful(value).seal[Response]
 
-      var tapped = false
+      var tapped      = false
       val tappedValue = sealedValue.tap { v =>
         tapped = true
         v

@@ -52,7 +52,7 @@ class SealedPrograms {
   def baseline1 = returnOption.flatMap {
     case None                        => M.pure(SomeCase)
     case Some(number) if number == 0 => M.pure(SomeOtherCase)
-    case Some(_) =>
+    case Some(_)                     =>
       val actionT = OptionT(doSomeWork).map(_.last == 'a')
       actionT.value flatMap {
         case Some(true)  => M.pure(SomeCase)

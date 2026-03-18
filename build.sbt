@@ -22,6 +22,7 @@ ThisBuild / githubWorkflowJavaVersions          := Seq(JavaSpec.temurin("11"), J
 ThisBuild / githubWorkflowPublishTargetBranches := Seq(RefPredicate.StartsWith(Ref.Tag("v")), RefPredicate.Equals(Ref.Branch("master")))
 ThisBuild / tlBaseVersion                       := "2.0"
 ThisBuild / tlCiHeaderCheck                     := false
+
 ThisBuild / publishTo := {
   val centralSnapshots = "https://central.sonatype.com/repository/maven-snapshots/"
   if (isSnapshot.value) Some("central-snapshots" at centralSnapshots)
@@ -66,7 +67,7 @@ lazy val baseSettings = Seq(
   organization         := "pl.iterators",
   organizationName     := "Iterators",
   organizationHomepage := Some(url("https://www.iteratorshq.com")),
-  developers := List(
+  developers           := List(
     Developer(
       id = "luksow",
       name = "Łukasz Sowa",

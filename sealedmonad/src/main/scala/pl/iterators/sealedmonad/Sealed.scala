@@ -691,10 +691,10 @@ object Sealed extends SealedInstances {
     def recur(value: Intermediate): F[Either[Intermediate, Final]] = value.asLeft[Final].pure[F]
     def returns(value: Final): F[Either[Intermediate, Final]]      = value.asRight[Intermediate].pure[F]
     value.tailRecM {
-      case Pure(either)         => returns(either)
-      case Suspend(Left(fa))    => fa.flatMap(a => returns(a.asLeft[ADT]))
-      case Suspend(Right(fadt)) => fadt.flatMap(adt => returns(adt.asRight[A]))
-      case Defer(value)         => recur(value())
+      case Pure(either)                   => returns(either)
+      case Suspend(Left(fa))              => fa.flatMap(a => returns(a.asLeft[ADT]))
+      case Suspend(Right(fadt))           => fadt.flatMap(adt => returns(adt.asRight[A]))
+      case Defer(value)                   => recur(value())
       case Transform(current, onA, onADT) =>
         current match {
           case Pure(Left(a))                 => recur(onA(a))
