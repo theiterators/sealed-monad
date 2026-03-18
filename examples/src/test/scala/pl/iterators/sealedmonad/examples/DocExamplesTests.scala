@@ -160,7 +160,7 @@ class DocExamplesTests extends AnyFunSuite with Matchers {
 
         // Check if email is already taken
         emailExistsCheck <- checkEmailExists(email).seal
-        _ <- (!emailExistsCheck)
+        _                <- (!emailExistsCheck)
           .pure[Future]
           .ensure(notTaken => notTaken, RegistrationResponse.EmailTaken)
 
