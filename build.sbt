@@ -2,15 +2,15 @@ val isScala3 = Def.setting(CrossVersion.partialVersion(scalaVersion.value).exist
 
 // Dependencies
 
-val catsVersion                  = "2.12.0"
+val catsVersion                  = "2.13.0"
 val castsTestkitScalatestVersion = "2.1.5"
 val scalatestVersion             = "3.2.19"
 val disciplineVersion            = "2.3.0"
 
 // Multiple Scala versions support
 
-val scala_2_13             = "2.13.15"
-val scala_3                = "3.3.4"
+val scala_2_13             = "2.13.18"
+val scala_3                = "3.3.7"
 val mainScalaVersion       = scala_2_13
 val supportedScalaVersions = Seq(scala_2_13, scala_3)
 
@@ -59,7 +59,7 @@ lazy val baseSettings = Seq(
     "org.typelevel" %%% "discipline-scalatest" % disciplineVersion % Test
   ) ++ (if (isScala3.value) Nil
         else
-          Seq(compilerPlugin("org.typelevel" %% "kind-projector" % "0.13.3" cross CrossVersion.full))),
+          Seq(compilerPlugin("org.typelevel" %% "kind-projector" % "0.13.4" cross CrossVersion.full))),
   scalafmtOnCompile := true,
 // Sonatype settings
   licenses             := Seq("Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0")),
