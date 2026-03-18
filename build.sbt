@@ -22,6 +22,19 @@ ThisBuild / githubWorkflowJavaVersions          := Seq(JavaSpec.temurin("11"), J
 ThisBuild / githubWorkflowPublishTargetBranches := Seq(RefPredicate.StartsWith(Ref.Tag("v")), RefPredicate.Equals(Ref.Branch("master")))
 ThisBuild / tlBaseVersion                       := "2.0"
 ThisBuild / tlCiHeaderCheck                     := false
+ThisBuild / githubWorkflowPublish := Seq(
+  WorkflowStep.Sbt(
+    List("tlCiRelease"),
+    name = Some("Publish"),
+    env = Map(
+      "PGP_PASSPHRASE"        -> "${{ secrets.PGP_PASSPHRASE }}",
+      "PGP_SECRET"            -> "${{ secrets.PGP_SECRET }}",
+      "SONATYPE_USERNAME"     -> "${{ secrets.SONATYPE_USERNAME }}",
+      "SONATYPE_PASSWORD"     -> "${{ secrets.SONATYPE_PASSWORD }}",
+      "SONATYPE_CREDENTIAL_HOST" -> "${{ secrets.SONATYPE_CREDENTIAL_HOST }}"
+    )
+  )
+)
 ThisBuild / publishTo := {
   val centralSnapshots = "https://central.sonatype.com/repository/maven-snapshots/"
   if (isSnapshot.value) Some("central-snapshots" at centralSnapshots)

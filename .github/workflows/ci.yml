@@ -233,9 +233,11 @@ jobs:
 
       - name: Publish
         env:
-          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
           SONATYPE_CREDENTIAL_HOST: ${{ secrets.SONATYPE_CREDENTIAL_HOST }}
+          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          PGP_SECRET: ${{ secrets.PGP_SECRET }}
         run: sbt tlCiRelease
 
   dependency-submission:
