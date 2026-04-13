@@ -1,5 +1,5 @@
 addSbtPlugin("pl.project13.scala"    % "sbt-jmh"                  % "0.4.8")
-addSbtPlugin("org.scalameta"         % "sbt-scalafmt"             % "2.5.6")
+addSbtPlugin("org.scalameta"         % "sbt-scalafmt"             % "2.6.0")
 addSbtPlugin("org.typelevel"         % "sbt-typelevel-ci-release" % "0.8.5")
 addSbtPlugin("io.github.sbt-doctest" % "sbt-doctest"              % "0.12.4")
 addSbtPlugin("org.scalameta"         % "sbt-mdoc"                 % "2.8.2")
