@@ -10,7 +10,7 @@ val disciplineVersion            = "2.3.0"
 // Multiple Scala versions support
 
 val scala_2_13             = "2.13.18"
-val scala_3                = "3.3.7"
+val scala_3                = "3.9.0"
 val mainScalaVersion       = scala_2_13
 val supportedScalaVersions = Seq(scala_2_13, scala_3)
 
@@ -38,7 +38,7 @@ lazy val baseSettings = Seq(
                          "-unchecked",
                          "-feature",
                          "-language:implicitConversions",
-                         "-Ykind-projector:underscores",
+                         "-Xkind-projector:underscores",
                          "-encoding",
                          "utf8"
                        )
