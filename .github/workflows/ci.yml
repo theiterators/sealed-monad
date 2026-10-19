@@ -28,7 +28,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-22.04]
-        scala: [2.13, 3]
+        scala: [3.10.0, 3.3.7]
         java: [temurin@11, temurin@17]
         project: [sealedMonadNative, sealedMonadJS, sealedMonadJVM]
         exclude:
@@ -154,62 +154,62 @@ jobs:
         if: matrix.java == 'temurin@17' && steps.setup-java-temurin-17.outputs.cache-hit == 'false'
         run: sbt +update
 
-      - name: Download target directories (2.13, sealedMonadNative)
+      - name: Download target directories (3.10.0, sealedMonadNative)
         uses: actions/download-artifact@v6
         with:
-          name: target-${{ matrix.os }}-${{ matrix.java }}-2.13-sealedMonadNative
+          name: target-${{ matrix.os }}-${{ matrix.java }}-3.10.0-sealedMonadNative
 
-      - name: Inflate target directories (2.13, sealedMonadNative)
+      - name: Inflate target directories (3.10.0, sealedMonadNative)
         run: |
           tar xf targets.tar
           rm targets.tar
 
-      - name: Download target directories (2.13, sealedMonadJS)
+      - name: Download target directories (3.10.0, sealedMonadJS)
         uses: actions/download-artifact@v6
         with:
-          name: target-${{ matrix.os }}-${{ matrix.java }}-2.13-sealedMonadJS
+          name: target-${{ matrix.os }}-${{ matrix.java }}-3.10.0-sealedMonadJS
 
-      - name: Inflate target directories (2.13, sealedMonadJS)
+      - name: Inflate target directories (3.10.0, sealedMonadJS)
         run: |
           tar xf targets.tar
           rm targets.tar
 
-      - name: Download target directories (2.13, sealedMonadJVM)
+      - name: Download target directories (3.10.0, sealedMonadJVM)
         uses: actions/download-artifact@v6
         with:
-          name: target-${{ matrix.os }}-${{ matrix.java }}-2.13-sealedMonadJVM
+          name: target-${{ matrix.os }}-${{ matrix.java }}-3.10.0-sealedMonadJVM
 
-      - name: Inflate target directories (2.13, sealedMonadJVM)
+      - name: Inflate target directories (3.10.0, sealedMonadJVM)
         run: |
           tar xf targets.tar
           rm targets.tar
 
-      - name: Download target directories (3, sealedMonadNative)
+      - name: Download target directories (3.3.7, sealedMonadNative)
         uses: actions/download-artifact@v6
         with:
-          name: target-${{ matrix.os }}-${{ matrix.java }}-3-sealedMonadNative
+          name: target-${{ matrix.os }}-${{ matrix.java }}-3.3.7-sealedMonadNative
 
-      - name: Inflate target directories (3, sealedMonadNative)
+      - name: Inflate target directories (3.3.7, sealedMonadNative)
         run: |
           tar xf targets.tar
           rm targets.tar
 
-      - name: Download target directories (3, sealedMonadJS)
+      - name: Download target directories (3.3.7, sealedMonadJS)
         uses: actions/download-artifact@v6
         with:
-          name: target-${{ matrix.os }}-${{ matrix.java }}-3-sealedMonadJS
+          name: target-${{ matrix.os }}-${{ matrix.java }}-3.3.7-sealedMonadJS
 
-      - name: Inflate target directories (3, sealedMonadJS)
+      - name: Inflate target directories (3.3.7, sealedMonadJS)
         run: |
           tar xf targets.tar
           rm targets.tar
 
-      - name: Download target directories (3, sealedMonadJVM)
+      - name: Download target directories (3.3.7, sealedMonadJVM)
         uses: actions/download-artifact@v6
         with:
-          name: target-${{ matrix.os }}-${{ matrix.java }}-3-sealedMonadJVM
+          name: target-${{ matrix.os }}-${{ matrix.java }}-3.3.7-sealedMonadJVM
 
-      - name: Inflate target directories (3, sealedMonadJVM)
+      - name: Inflate target directories (3.3.7, sealedMonadJVM)
         run: |
           tar xf targets.tar
           rm targets.tar
@@ -284,5 +284,5 @@ jobs:
       - name: Submit Dependencies
         uses: scalacenter/sbt-dependency-submission@v2
         with:
-          modules-ignore: sealedmonadnative_2.13 sealedmonadnative_3 sealedmonad_2.13 sealedmonad_3 sealedmonadjs_2.13 sealedmonadjs_3 sealedmonadjvm_2.13 sealedmonadjvm_3
+          modules-ignore: sealedmonadnative_3 sealedmonadnative_3 sealedmonad_3 sealedmonad_3 sealedmonadjs_3 sealedmonadjs_3 sealedmonadjvm_3 sealedmonadjvm_3
           configs-ignore: test scala-tool scala-doc-tool test-internal
