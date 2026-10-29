@@ -10,7 +10,7 @@ val disciplineVersion            = "2.3.0"
 // Multiple Scala versions support
 
 val scala_2_13             = "2.13.18"
-val scala_3                = "3.3.7"
+val scala_3                = "3.3.9"
 val mainScalaVersion       = scala_2_13
 val supportedScalaVersions = Seq(scala_2_13, scala_3)
 
